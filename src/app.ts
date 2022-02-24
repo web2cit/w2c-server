@@ -30,7 +30,19 @@ app.get("/:url(*)", (req, res) => {
       return domain.translate(target);
     })
     .then((output) => {
-      res.send(output);
+      // may be undefined!
+      const citation = output.translation.outputs[0].citation;
+      // how do I change the URL interpreted by zotero? use a canonical?
+      res.send(`
+<!DOCTYPE html>
+<head>
+  <link rel="canonical" href="${citation.url}" />
+  <meta property="og.title" content="${citation.title}">
+</head>
+<body>
+  <h1>${citation.title}</h1>
+</body>
+        `);
     });
 });
 
