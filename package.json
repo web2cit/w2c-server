@@ -18,9 +18,13 @@
     "url": "https://phabricator.wikimedia.org/project/view/5689/"
   },
   "homepage": "https://meta.wikimedia.org/wiki/Web2Cit",
+  "engines": {
+    "node": ">= 12"
+  },
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@types/jest": "^27.4.0",
+    "@types/node": "^12.20.46",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
     "eslint": "^8.6.0",
