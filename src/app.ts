@@ -67,7 +67,7 @@ app.get("/:url(*)", (req, res) => {
           contents.forEach((content) => {
             const tag = `<meta property="${prefix}:${field}" content="${content}"/>`;
             metaTags.push(tag);
-            const item = `<li><b>${field}s:</b> ${content}</li>`;
+            const item = `<li><b>${field}:</b> ${content}</li>`;
             items.push(item);
           });
         }
