@@ -56,6 +56,7 @@ app.get("/:url(*)", (req, res) => {
                 if (typeof item === "string") {
                   contents.push(item);
                 } else {
+                  item.reverse();
                   const creator = item.join(", ");
                   contents.push(creator);
                   // fixme: support creators other than author
