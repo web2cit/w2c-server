@@ -4,7 +4,9 @@
   "description": "Web2Cit translation server",
   "main": "dist/app.js",
   "scripts": {
-    "start": "tsc && node dist/app.js",
+    "start": "NODE_ENV=production node dist/app.js",
+    "dev": "npm run build && node dist/app.js",
+    "build": "tsc",
     "test": "jest",
     "prepare": "husky install"
   },
