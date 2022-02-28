@@ -95,7 +95,7 @@ app.get(
     const metaTags: string[] = [];
     const items: string[] = [];
     (Object.keys(citation) as Array<keyof typeof citation>).forEach((field) => {
-      if (field === "key" || field === "version") return;
+      if (field === "key" || field === "version" || field === "source") return;
 
       let prefix = "z";
       const contents: string[] = [];
@@ -133,7 +133,6 @@ app.get(
     });
 
     // fixme: publisher mapped to multiple fields ends in extra
-    // fixme: source ends in extra. what does zotero use it for?
     res.send(`
 <!DOCTYPE html>
 <html
