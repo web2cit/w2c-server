@@ -1,5 +1,5 @@
 import express, { NextFunction, RequestHandler } from "express";
-import { Domain, Webpage, fallbackTemplate } from "web2cit";
+import { Domain, Webpage, fallbackTemplate, HTTPResponseError } from "web2cit";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,15 +33,35 @@ function wrap(
 app.get(
   "/:url(*)",
   wrap(async (req, res) => {
-    // handle wrong urls
-    const url = new URL(req.params.url);
-    const target = new Webpage(url.href);
-    const domain = new Domain(
-      target.domain,
-      undefined,
-      // fixme: change the order here
-      fallbackTemplate
-    );
+    let target;
+    try {
+      target = new Webpage(req.params.url);
+    } catch {
+      res.status(400).send("Invalid target URL");
+      return;
+    }
+    const url = target.url;
+
+    let domain;
+    try {
+      domain = new Domain(
+        target.domain,
+        undefined,
+        // fixme: change the order here
+        fallbackTemplate
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        res
+          .status(400)
+          .send(
+            `Something may be wrong with the target URL's domain: ${error.message}`
+          );
+        return;
+      } else {
+        throw error;
+      }
+    }
 
     // consider having an init method
     const revision = await domain.templates.getLatestRevision();
@@ -49,7 +69,26 @@ app.get(
       domain.templates.loadConfiguration(revision.configuration);
     }
 
-    const output = await domain.translate(target);
+    let output;
+    try {
+      output = await domain.translate(target);
+    } catch (error) {
+      if (error instanceof Error) {
+        // fixme: we should treat differently 404 errors from target server
+        // than from citoid api
+        if (error instanceof HTTPResponseError) {
+          const response = error.response;
+          res
+            .status(response.status)
+            .send(
+              "<h1>Failed to fetch one of the external resources required to translate the target URL</h1>" +
+                `External resource: ${error.url} (Error ${response.status}: ${response.statusText})`
+            );
+          return;
+        }
+      }
+      throw error;
+    }
 
     // fixme: may be undefined!
     const citation = output.translation.outputs[0].citation;
@@ -119,3 +158,11 @@ app.get(
 app.listen(port, () => {
   console.log(`server is listening on ${port}!`);
 });
+
+class RequestError extends Error {
+  status?: number;
+  // headers: any;
+  constructor(message: string) {
+    super(message);
+  }
+}
