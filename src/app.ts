@@ -1,4 +1,4 @@
-import express, { NextFunction, RequestHandler } from "express";
+import express, { RequestHandler } from "express";
 import { Domain, Webpage, fallbackTemplate, HTTPResponseError } from "web2cit";
 
 const app = express();
