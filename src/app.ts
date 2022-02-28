@@ -125,9 +125,10 @@ app.get(
         }
       }
       contents.forEach((content) => {
-        const tag = `<meta property="${prefix}:${field}" content="${content}"/>`;
+        const htmlContent = htmlEncode(content);
+        const tag = `<meta property="${prefix}:${field}" content="${htmlContent}"/>`;
         metaTags.push(tag);
-        const item = `<li><b>${field}:</b> ${content}</li>`;
+        const item = `<li><b>${field}:</b> ${htmlContent}</li>`;
         items.push(item);
       });
     });
@@ -153,6 +154,17 @@ app.get(
   `);
   })
 );
+
+function htmlEncode(text: string): string {
+  const map = new Map([
+    ["&", "&amp;"],
+    ["<", "&lt;"],
+    [">", "&gt;"],
+    ['"', "&quot;"],
+    ["'", "&#039;"],
+  ]);
+  return text.replace(/[&<>"']/g, (char) => map.get(char) ?? char);
+}
 
 app.listen(port, () => {
   console.log(`server is listening on ${port}!`);
