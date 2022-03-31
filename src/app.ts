@@ -30,111 +30,132 @@ function wrap(
   return wrappedFn;
 }
 
-app.get(
-  "/:url(*)",
-  wrap(async (req, res) => {
-    let target;
-    try {
-      target = new Webpage(req.params.url);
-    } catch {
-      res.status(400).send("Invalid target URL");
+async function handler(
+  req: Parameters<RequestHandler>[0],
+  res: Parameters<RequestHandler>[1]
+) {
+  let target;
+  try {
+    target = new Webpage(req.params.url);
+  } catch {
+    res.status(400).send("Invalid target URL");
+    return;
+  }
+  const url = target.url;
+
+  let domain;
+  try {
+    domain = new Domain(
+      target.domain,
+      undefined,
+      // fixme: change the order here
+      fallbackTemplate
+    );
+  } catch (error) {
+    if (error instanceof Error) {
+      res
+        .status(400)
+        .send(
+          `Something may be wrong with the target URL's domain: ${error.message}`
+        );
       return;
-    }
-    const url = target.url;
-
-    let domain;
-    try {
-      domain = new Domain(
-        target.domain,
-        undefined,
-        // fixme: change the order here
-        fallbackTemplate
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        res
-          .status(400)
-          .send(
-            `Something may be wrong with the target URL's domain: ${error.message}`
-          );
-        return;
-      } else {
-        throw error;
-      }
-    }
-
-    // consider having an init method
-    const revision = await domain.templates.getLatestRevision();
-    if (revision !== undefined) {
-      domain.templates.loadConfiguration(revision.configuration);
-    }
-
-    let output;
-    try {
-      output = await domain.translate(target);
-    } catch (error) {
-      if (error instanceof Error) {
-        // fixme: we should treat differently 404 errors from target server
-        // than from citoid api
-        if (error instanceof HTTPResponseError) {
-          const response = error.response;
-          res
-            .status(response.status)
-            .send(
-              "<h1>Failed to fetch one of the external resources required to translate the target URL</h1>" +
-                `External resource: ${error.url} (Error ${response.status}: ${response.statusText})`
-            );
-          return;
-        }
-      }
+    } else {
       throw error;
     }
+  }
 
-    // fixme: may be undefined!
-    const citation = output.translation.outputs[0].citation;
-    const metaTags: string[] = [];
-    const items: string[] = [];
-    (Object.keys(citation) as Array<keyof typeof citation>).forEach((field) => {
-      if (field === "key" || field === "version" || field === "source") return;
+  if (req.params.user) {
+    // todo: storage root should be given to the Domain constructor
+    domain.templates.storage.root = `User:${req.params.user}/Web2Cit/data/`;
+    domain.patterns.storage.root = `User:${req.params.user}/Web2Cit/data/`;
+  }
 
-      let prefix = "z";
-      const contents: string[] = [];
+  // consider having an init method
+  const revision = await domain.templates.getLatestRevision();
+  if (revision !== undefined) {
+    domain.templates.loadConfiguration(revision.configuration);
+  }
 
-      if (field === "tags") {
-        const tags = citation[field];
-        if (tags === undefined) return;
-        tags.forEach((tag) => contents.push(tag.tag));
-      } else {
-        const value = citation[field];
-        if (value === undefined) return;
-
-        if (typeof value === "string") {
-          contents.push(value);
-        } else {
-          value.forEach((item) => {
-            if (typeof item === "string") {
-              contents.push(item);
-            } else {
-              item.reverse();
-              const creator = item.join(", ");
-              contents.push(creator);
-              // fixme: support creators other than author
-              prefix = "so";
-            }
-          });
-        }
+  let output;
+  try {
+    output = await domain.translate(target);
+  } catch (error) {
+    if (error instanceof Error) {
+      // fixme: we should treat differently 404 errors from target server
+      // than from citoid api
+      if (error instanceof HTTPResponseError) {
+        const response = error.response;
+        res
+          .status(response.status)
+          .send(
+            "<h1>Failed to fetch one of the external resources required to translate the target URL</h1>" +
+              `External resource: ${error.url} (Error ${response.status}: ${response.statusText})`
+          );
+        return;
       }
-      contents.forEach((content) => {
-        const htmlContent = htmlEncode(content);
-        const tag = `<meta property="${prefix}:${field}" content="${htmlContent}"/>`;
-        metaTags.push(tag);
-        const item = `<li><b>${field}:</b> ${htmlContent}</li>`;
-        items.push(item);
-      });
-    });
+    }
+    throw error;
+  }
 
-    // fixme: publisher mapped to multiple fields ends in extra
-    res.send(`
+  // fixme: may be undefined!
+  const citation = output.translation.outputs[0].citation;
+  const metaTags: string[] = [];
+  const items: string[] = [];
+  (Object.keys(citation) as Array<keyof typeof citation>).forEach((field) => {
+    if (field === "key" || field === "version" || field === "source") return;
+
+    let prefix = "z";
+    const contents: string[] = [];
+
+    if (field === "tags") {
+      const tags = citation[field];
+      if (tags === undefined) return;
+      tags.forEach((tag) => contents.push(tag.tag));
+    } else {
+      const value = citation[field];
+      if (value === undefined) return;
+
+      if (typeof value === "string") {
+        contents.push(value);
+      } else {
+        value.forEach((item) => {
+          if (typeof item === "string") {
+            contents.push(item);
+          } else {
+            item.reverse();
+            const creator = item.join(", ");
+            contents.push(creator);
+            // fixme: support creators other than author
+            prefix = "so";
+          }
+        });
+      }
+    }
+    contents.forEach((content) => {
+      const htmlContent = htmlEncode(content);
+      const tag = `<meta property="${prefix}:${field}" content="${htmlContent}"/>`;
+      metaTags.push(tag);
+      const item = `<li><b>${field}:</b> ${htmlContent}</li>`;
+      items.push(item);
+    });
+  });
+
+  // todo: domain configuration object should have a shortcut for this
+  const templatesPath =
+    domain.templates.mediawiki.instance +
+    domain.templates.mediawiki.wiki +
+    domain.templates.storage.root +
+    domain.templates.storage.path +
+    domain.templates.storage.filename;
+  const patternsPath =
+    domain.patterns.mediawiki.instance +
+    domain.patterns.mediawiki.wiki +
+    domain.patterns.storage.root +
+    domain.patterns.storage.path +
+    domain.patterns.storage.filename;
+
+  // fixme: publisher mapped to multiple fields ends in extra
+  res.send(`
 <!DOCTYPE html>
 <html
   xmlns="http://www.w3.org/1999/xhtml"
@@ -145,15 +166,20 @@ app.get(
   ${metaTags.join("")}
 </head>
 <body>
-  <p>Web2Cit translation for ${url}:</p>
+  <p>Web2Cit translation for ${url}</p>
   <ul>
   ${items.join("")}
   </ul>
+  <p>Templates configuration: <a href="${templatesPath}">${templatesPath}</a></p>
+  <p>Patterns configuration: <a href="${patternsPath}">${patternsPath}</a></p>
 </body>
 </html>
   `);
-  })
-);
+}
+
+app.get("/sandbox/:user/:url(*)", wrap(handler));
+
+app.get("/:url(*)", wrap(handler));
 
 function htmlEncode(text: string): string {
   const map = new Map([
