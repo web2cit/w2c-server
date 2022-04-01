@@ -1,5 +1,7 @@
 import express, { RequestHandler } from "express";
+import { allowedNodeEnvironmentFlags } from "process";
 import { Domain, Webpage, fallbackTemplate, HTTPResponseError } from "web2cit";
+import { StepOutput } from "web2cit/dist/types";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -34,6 +36,8 @@ async function handler(
   req: Parameters<RequestHandler>[0],
   res: Parameters<RequestHandler>[1]
 ) {
+  const debug = req.path.split("/")[1] === "debug";
+
   let target;
   try {
     target = new Webpage(req.params.url);
@@ -73,12 +77,21 @@ async function handler(
   // consider having an init method
   const revision = await domain.templates.getLatestRevision();
   if (revision !== undefined) {
-    domain.templates.loadConfiguration(revision.configuration);
+    domain.templates.loadRevision(revision);
   }
 
   let output;
   try {
-    output = await domain.translate(target);
+    if (debug) {
+      output = await domain.translate(target, {
+        // return non-applicable template outputs
+        onlyApplicable: false,
+        //
+        templateFieldInfo: true,
+      });
+    } else {
+      output = await domain.translate(target);
+    }
   } catch (error) {
     if (error instanceof Error) {
       // fixme: we should treat differently 404 errors from target server
@@ -97,8 +110,35 @@ async function handler(
     throw error;
   }
 
-  // fixme: may be undefined!
-  const citation = output.translation.outputs[0].citation;
+  // todo: consider changing w2c-core's TranslationOutput
+  // to include a citations property
+  // see T302431
+  type Citation = NonNullable<
+    Awaited<
+      ReturnType<Domain["translate"]>
+    >["translation"]["outputs"][number]["citation"]
+  >;
+  const citations = output.translation.outputs.reduce(
+    (citations: Citation[], output) => {
+      const citation = output.citation;
+      if (citation !== undefined) citations.push(citation);
+      return citations;
+    },
+    []
+  );
+
+  // todo: support multiple citations
+  // returned from multiple applicable templates
+  // if domain.translate is called with allTemplates = true
+  const citation = citations[0];
+  if (citation === undefined) {
+    // fixes T305166
+    res
+      .status(404)
+      .send(`No applicable translation template found for target webpage.`);
+    return;
+  }
+
   const metaTags: string[] = [];
   const items: string[] = [];
   (Object.keys(citation) as Array<keyof typeof citation>).forEach((field) => {
@@ -140,6 +180,211 @@ async function handler(
     });
   });
 
+  // create debug output
+  let debugHtml = "";
+  if (debug) {
+    // todo: w2c-core's TranslationOutput pattern may be undefined if catch-all
+    const pattern = output.translation.pattern;
+    // todo: w2c-core's TranslationOutput may include pattern label
+    const templates = output.translation.outputs.reduce(
+      (html: string, output) => {
+        const path = output.template.path;
+        // todo: w2c-core's TranslationOutput may include template label
+        // const label = output.template.label;
+        const applicable = output.template.applicable;
+        const fields = output.template.fields?.reduce((html: string, field) => {
+          const fieldname = field.name;
+          const required = field.required;
+          // todo: w2c-core's FieldInfo may include field pattern
+          // do we need isArray too?
+          // const pattern = field.pattern;
+
+          // todo: w2c-core's FieldInfo should include field output validity
+          const valid = Boolean(
+            field.output.length && field.output.every((value) => value !== null)
+          );
+          const applicable = field.applicable;
+
+          // todo: w2c-core's FieldInfo should include combined procedure output as output
+          const output = field.procedures.reduce((html: string, procedure) => {
+            html += procedure.output.map((value) => `<li>${value}</li>`).join();
+            return html;
+          }, "");
+          const procedures = field.procedures.reduce(
+            (html: string, procedure, index) => {
+              const output = procedure.output.reduce((html: string, value) => {
+                html += `<li>${value}</li>`;
+                return html;
+              }, "");
+              const selections = procedure.selections.reduce(
+                (html: string, selection) => {
+                  const type = selection.type;
+                  const config = selection.config;
+                  const output = selection.output.reduce(
+                    (html: string, value) => {
+                      html += `<li>${value}</li>`;
+                      return html;
+                    },
+                    ""
+                  );
+                  html += `
+                    <li>${type} selection
+                      <ul>
+                        <li>config: ${config}</li>
+                        <li>output:
+                          <ol>
+                            ${output}
+                          </ol>
+                        </li>
+                      </ul>
+                    </li>
+                    `;
+                  return html;
+                },
+                ""
+              );
+              // todo: w2c-core's FieldInfo may have an overall selection output
+              const selectionOutput = procedure.selections.reduce(
+                (html: string, selection) => {
+                  html += selection.output
+                    .map((value) => `<li>${value}</li>`)
+                    .join();
+                  return html;
+                },
+                ""
+              );
+              const transformations = procedure.transformations.reduce(
+                (html: string, transformation) => {
+                  const type = transformation.type;
+                  const config = transformation.config;
+                  const itemwise = transformation.itemwise;
+                  const output = transformation.output.reduce(
+                    (html: string, value) => {
+                      html += `<li>${value}</li>`;
+                      return html;
+                    },
+                    ""
+                  );
+                  html += `
+                    <li>${type} transformation
+                      <ul>
+                        <li>config: ${config}</li>
+                        <li>itemwise: ${itemwise}</li>
+                        <li>output:
+                          <ol>
+                            ${output}
+                          </ol>
+                        </li>
+                      </ul>
+                    </li>
+                    `;
+                  return html;
+                },
+                ""
+              );
+              // todo: w2c-core's FieldInfo may have an overall transformation output
+              const transformationOutput = output;
+              html = `
+                <li>Procedure ${index + 1}
+                  <ul>
+                    <li>Selection
+                      <ul>
+                        <li>Selection steps:
+                          <ol>
+                            ${selections}
+                          </ol>
+                        </li>
+                        <li>Selection output:
+                          <ol>
+                            ${selectionOutput}
+                          </ol>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>Transformation
+                      <ul>
+                        <li>Transformation steps:
+                          <ol>
+                            ${transformations}
+                          </ol>
+                        </li>
+                        <li>Transformation output:
+                          <ol>
+                            ${transformationOutput}
+                          </ol>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                `;
+              return html;
+            },
+            ""
+          );
+          html += `
+            <li>${fieldname} field
+              <ul>
+                <li>required: ${required}</li>
+                <li>procedures:
+                  <ol>
+                    ${procedures}
+                  </ol>
+                </li>
+                <li>output:
+                  <ol>
+                    ${output}
+                  </ol>
+                </li>
+                <li>pattern: see <a href="https://meta.wikimedia.org/wiki/Web2Cit/Early_adopters#Translation_field_types">early adopter guidelines</a></li>
+                <li>valid: ${valid}</li>
+                <li>applicable: ${applicable}</li>
+              </ul>
+            </li>
+            `;
+          return html;
+        }, "");
+        html += `
+        <li>Template: ${path}
+          <ul>
+            <li>applicable: ${applicable}</li>
+            <li>fields:
+              <ul>
+                ${fields}
+              </ul>
+            </li>
+          </ul>
+        </li>
+        `;
+        return html;
+      },
+      ""
+    );
+    debugHtml = `
+    <h2>Debugging information</h2>
+    <ul>
+      <li>patterns.json: ${
+        domain.patterns.currentRevid
+          ? `revid ${domain.patterns.currentRevid}`
+          : "not found or corrupt"
+      }
+        <ul>
+          <li>URL path pattern group: ${pattern}</li>
+        </ul>
+      </li>
+      <li>templates.json: ${
+        domain.templates.currentRevid
+          ? `revid ${domain.templates.currentRevid}`
+          : "not found or corrupt"
+      }
+        <ol>
+          ${templates}
+        </ol>
+      </li>
+    </ul>
+    `;
+  }
+
   // todo: domain configuration object should have a shortcut for this
   const templatesPath =
     domain.templates.mediawiki.instance +
@@ -172,10 +417,18 @@ async function handler(
   </ul>
   <p>Templates configuration: <a href="${templatesPath}">${templatesPath}</a></p>
   <p>Patterns configuration: <a href="${patternsPath}">${patternsPath}</a></p>
+  ${debugHtml}
 </body>
 </html>
   `);
 }
+// may not be the best approach
+// alternatively, we may use a debug subdomain, but toolforge tools don't seem to support subdomains
+// we may use query string parameters, but that would mean passing the url as parameter
+// and we would need to escape it
+app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
+
+app.get("/debug/:url(*)", wrap(handler));
 
 app.get("/sandbox/:user/:url(*)", wrap(handler));
 
