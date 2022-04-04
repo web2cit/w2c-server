@@ -71,9 +71,13 @@ async function handler(
   }
 
   // consider having an init method
-  const revision = await domain.templates.getLatestRevision();
-  if (revision !== undefined) {
-    domain.templates.loadConfiguration(revision.configuration);
+  const templatesRevision = await domain.templates.getLatestRevision();
+  if (templatesRevision !== undefined) {
+    domain.templates.loadConfiguration(templatesRevision.configuration);
+  }
+  const patternsRevision = await domain.patterns.getLatestRevision();
+  if (patternsRevision !== undefined) {
+    domain.patterns.loadConfiguration(patternsRevision.configuration);
   }
 
   let output;
