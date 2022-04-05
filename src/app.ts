@@ -255,7 +255,9 @@ function makeDebugHtml(
   // todo: w2c-core's TranslationOutput pattern may be undefined if catch-all
   const pattern = translation.pattern;
   // todo: w2c-core's TranslationOutput may include pattern label
-  const templates = makeTemplatesHtml(translation);
+  const templates = translation.outputs
+    .map((output) => makeTemplateHtml(output.template))
+    .join("");
 
   const html = `
     <h2>Debugging information</h2>
@@ -279,202 +281,189 @@ function makeDebugHtml(
   return html;
 }
 
-function makeTemplatesHtml(
-  translation: Parameters<typeof makeDebugHtml>[0]
+function makeTemplateHtml(
+  template: Parameters<typeof makeDebugHtml>[0]["outputs"][number]["template"]
 ): string {
-  const html = translation.outputs.reduce((html: string, output) => {
-    const path = output.template.path;
-    // todo: w2c-core's TranslationOutput may include template label
-    // const label = output.template.label;
-    const applicable = output.template.applicable;
-    if (output.template.fields === undefined) {
-      throw new Error(
-        "Unexpected undefined fields property in debug translation output"
-      );
-    }
-    const fields = makeFieldsHtml(output.template.fields);
-    html += `
-      <li>Template: ${path}
-        <ul>
-          <li>applicable: ${applicable}</li>
-          <li>fields:
-            <ul>
-              ${fields}
-            </ul>
-          </li>
-        </ul>
-      </li>
-      `;
-    return html;
-  }, "");
-  return html;
-}
-
-function makeFieldsHtml(
-  fields: NonNullable<
-    Parameters<typeof makeDebugHtml>[0]["outputs"][number]["template"]["fields"]
-  >
-): string {
-  const html = fields.reduce((html: string, field) => {
-    const fieldname = field.name;
-    const required = field.required;
-    // todo: w2c-core's FieldInfo may include field pattern
-    // do we need isArray too?
-    // const pattern = field.pattern;
-
-    // todo: w2c-core's FieldInfo should include field output validity
-    const valid = Boolean(
-      field.output.length && field.output.every((value) => value !== null)
+  const path = template.path;
+  // todo: w2c-core's TranslationOutput may include template label
+  // const label = output.template.label;
+  const applicable = template.applicable;
+  if (template.fields === undefined) {
+    throw new Error(
+      "Unexpected undefined fields property in debug translation output"
     );
-    const applicable = field.applicable;
+  }
+  const fields = template.fields.map((field) => makeFieldHtml(field)).join("");
 
-    // todo: w2c-core's FieldInfo should include combined procedure output as output
-    const output = field.procedures.reduce((html: string, procedure) => {
-      html += procedure.output.map((value) => `<li>${value}</li>`).join();
-      return html;
-    }, "");
-    const procedures = makeProceduresHtml(field.procedures);
-    html += `
-      <li>${fieldname} field
-        <ul>
-          <li>required: ${required}</li>
-          <li>procedures:
-            <ol>
-              ${procedures}
-            </ol>
-          </li>
-          <li>output:
-            <ol>
-              ${output}
-            </ol>
-          </li>
-          <li>pattern: see <a href="https://meta.wikimedia.org/wiki/Web2Cit/Early_adopters#Translation_field_types">early adopter guidelines</a></li>
-          <li>valid: ${valid}</li>
-          <li>applicable: ${applicable}</li>
-        </ul>
-      </li>
-      `;
-    return html;
-  }, "");
-  return html;
-}
-
-function makeProceduresHtml(
-  procedures: Parameters<typeof makeFieldsHtml>[0][number]["procedures"]
-): string {
-  const html = procedures.reduce((html: string, procedure, index) => {
-    const output = procedure.output.reduce((html: string, value) => {
-      html += `<li>${value}</li>`;
-      return html;
-    }, "");
-    const selections = makeSelectionsHtml(procedure.selections);
-    // todo: w2c-core's FieldInfo may have an overall selection output
-    const selectionOutput = procedure.selections.reduce(
-      (html: string, selection) => {
-        html += selection.output.map((value) => `<li>${value}</li>`).join();
-        return html;
-      },
-      ""
-    );
-    const transformations = makeTransformationsHtml(procedure.transformations);
-    // todo: w2c-core's FieldInfo may have an overall transformation output
-    const transformationOutput = output;
-
-    html = `
-        <li>Procedure ${index + 1}
+  return `
+    <li>Template: ${path}
+      <ul>
+        <li>applicable: ${applicable}</li>
+        <li>fields:
           <ul>
-            <li>Selection
-              <ul>
-                <li>Selection steps:
-                  <ol>
-                    ${selections}
-                  </ol>
-                </li>
-                <li>Selection output:
-                  <ol>
-                    ${selectionOutput}
-                  </ol>
-                </li>
-              </ul>
-            </li>
-            <li>Transformation
-              <ul>
-                <li>Transformation steps:
-                  <ol>
-                    ${transformations}
-                  </ol>
-                </li>
-                <li>Transformation output:
-                  <ol>
-                    ${transformationOutput}
-                  </ol>
-                </li>
-              </ul>
-            </li>
+            ${fields}
           </ul>
         </li>
-        `;
-    return html;
-  }, "");
-  return html;
+      </ul>
+    </li>
+  `;
 }
 
-function makeSelectionsHtml(
-  selections: Parameters<typeof makeProceduresHtml>[0][number]["selections"]
+function makeFieldHtml(
+  field: NonNullable<Parameters<typeof makeTemplateHtml>[0]["fields"]>[number]
 ): string {
-  const html = selections.reduce((html: string, selection) => {
-    const type = selection.type;
-    const config = selection.config;
-    const output = selection.output.reduce((html: string, value) => {
-      html += `<li>${value}</li>`;
+  const fieldname = field.name;
+  const required = field.required;
+  // todo: w2c-core's FieldInfo may include field pattern
+  // do we need isArray too?
+  // const pattern = field.pattern;
+
+  // todo: w2c-core's FieldInfo should include field output validity
+  const valid = Boolean(
+    field.output.length && field.output.every((value) => value !== null)
+  );
+  const applicable = field.applicable;
+
+  // todo: w2c-core's FieldInfo should include combined procedure output as output
+  const output = field.procedures.reduce((html: string, procedure) => {
+    html += procedure.output.map((value) => `<li>${value}</li>`).join();
+    return html;
+  }, "");
+  const procedures = field.procedures
+    .map((procedure, index) => makeProcedureHtml(procedure, index))
+    .join("");
+
+  return `
+    <li>${fieldname} field
+      <ul>
+        <li>required: ${required}</li>
+        <li>procedures:
+          <ol>
+            ${procedures}
+          </ol>
+        </li>
+        <li>output:
+          <ol>
+            ${output}
+          </ol>
+        </li>
+        <li>pattern: see <a href="https://meta.wikimedia.org/wiki/Web2Cit/Early_adopters#Translation_field_types">early adopter guidelines</a></li>
+        <li>valid: ${valid}</li>
+        <li>applicable: ${applicable}</li>
+      </ul>
+    </li>
+  `;
+}
+
+function makeProcedureHtml(
+  procedure: Parameters<typeof makeFieldHtml>[0]["procedures"][number],
+  index: number
+): string {
+  const output = procedure.output.reduce((html: string, value) => {
+    html += `<li>${value}</li>`;
+    return html;
+  }, "");
+  const selections = procedure.selections
+    .map((selection) => makeSelectionHtml(selection))
+    .join("");
+  // todo: w2c-core's FieldInfo may have an overall selection output
+  const selectionOutput = procedure.selections.reduce(
+    (html: string, selection) => {
+      html += selection.output.map((value) => `<li>${value}</li>`).join();
       return html;
-    }, "");
-    html += `
-        <li>${type} selection
+    },
+    ""
+  );
+  const transformations = procedure.transformations
+    .map((transformation) => makeTransformationHtml(transformation))
+    .join("");
+  // todo: w2c-core's FieldInfo may have an overall transformation output
+  const transformationOutput = output;
+
+  return `
+    <li>Procedure ${index + 1}
+      <ul>
+        <li>Selection
           <ul>
-            <li>config: ${config}</li>
-            <li>output:
+            <li>Selection steps:
               <ol>
-                ${output}
+                ${selections}
+              </ol>
+            </li>
+            <li>Selection output:
+              <ol>
+                ${selectionOutput}
               </ol>
             </li>
           </ul>
         </li>
-        `;
-    return html;
-  }, "");
-  return html;
-}
-
-function makeTransformationsHtml(
-  transformations: Parameters<
-    typeof makeProceduresHtml
-  >[0][number]["transformations"]
-): string {
-  const html = transformations.reduce((html: string, transformation) => {
-    const type = transformation.type;
-    const config = transformation.config;
-    const itemwise = transformation.itemwise;
-    const output = transformation.output.reduce((html: string, value) => {
-      html += `<li>${value}</li>`;
-      return html;
-    }, "");
-    html += `
-        <li>${type} transformation
+        <li>Transformation
           <ul>
-            <li>config: ${config}</li>
-            <li>itemwise: ${itemwise}</li>
-            <li>output:
+            <li>Transformation steps:
               <ol>
-                ${output}
+                ${transformations}
+              </ol>
+            </li>
+            <li>Transformation output:
+              <ol>
+                ${transformationOutput}
               </ol>
             </li>
           </ul>
         </li>
-        `;
+      </ul>
+    </li>
+  `;
+}
+
+function makeSelectionHtml(
+  selection: Parameters<typeof makeProcedureHtml>[0]["selections"][number]
+): string {
+  const type = selection.type;
+  const config = selection.config;
+  const output = selection.output.reduce((html: string, value) => {
+    html += `<li>${value}</li>`;
     return html;
   }, "");
-  return html;
+  return `
+    <li>${type} selection
+      <ul>
+        <li>config: ${config}</li>
+        <li>output:
+          <ol>
+            ${output}
+          </ol>
+        </li>
+      </ul>
+    </li>
+  `;
+}
+
+function makeTransformationHtml(
+  transformation: Parameters<
+    typeof makeProcedureHtml
+  >[0]["transformations"][number]
+): string {
+  const type = transformation.type;
+  const config = transformation.config;
+  const itemwise = transformation.itemwise;
+  const output = transformation.output.reduce((html: string, value) => {
+    html += `<li>${value}</li>`;
+    return html;
+  }, "");
+  return `
+    <li>${type} transformation
+      <ul>
+        <li>config: ${config}</li>
+        <li>itemwise: ${itemwise}</li>
+        <li>output:
+          <ol>
+            ${output}
+          </ol>
+        </li>
+      </ul>
+    </li>
+  `;
 }
 
 app.listen(port, () => {
