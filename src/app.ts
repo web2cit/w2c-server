@@ -179,13 +179,18 @@ async function handler(
   });
 
   // create debug output
-  let debugHtml = "";
+  let debugHtml;
   if (debug) {
     debugHtml = makeDebugHtml(
       output.translation,
       domain.patterns.currentRevid,
       domain.templates.currentRevid
     );
+  } else {
+    const href = "/debug" + req.url;
+    debugHtml =
+      `<p>Not what you expected? ` +
+      `Use the <a href="${href}">debug endpoint</a> for a detailed output.</p>`;
   }
 
   // todo: domain configuration object should have a shortcut for this
