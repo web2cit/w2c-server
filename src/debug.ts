@@ -112,10 +112,11 @@ function makeProcedureHtml(
   procedure: Parameters<typeof makeFieldHtml>[0]["procedures"][number],
   index: number
 ): string {
-  const output = procedure.output.reduce((html: string, value) => {
+  const procedureOutput = procedure.output.reduce((html: string, value) => {
     html += `<li>${value}</li>`;
     return html;
   }, "");
+
   const selections = procedure.selections
     .map((selection) => makeSelectionHtml(selection))
     .join("");
@@ -127,11 +128,13 @@ function makeProcedureHtml(
     },
     ""
   );
+
   const transformations = procedure.transformations
     .map((transformation) => makeTransformationHtml(transformation))
     .join("");
   // todo: w2c-core's FieldInfo may have an overall transformation output
-  const transformationOutput = output;
+  // the transformation output is also the procedure output
+  const transformationOutput = procedureOutput;
 
   return `
     <li>Procedure ${index + 1}
