@@ -71,17 +71,11 @@ function makeFieldHtml(
   // do we need isArray too?
   // const pattern = field.pattern;
 
-  // todo: w2c-core's FieldInfo should include field output validity
-  const valid = Boolean(
-    field.output.length && field.output.every((value) => value !== null)
-  );
+  const valid = field.valid;
   const applicable = field.applicable;
 
-  // todo: w2c-core's FieldInfo should include combined procedure output as output
-  const output = field.procedures.reduce((html: string, procedure) => {
-    html += procedure.output.map((value) => `<li>${value}</li>`).join();
-    return html;
-  }, "");
+  const output = field.output.map((value) => `<li>${value}</li>`).join("");
+
   const procedures = field.procedures
     .map((procedure, index) => makeProcedureHtml(procedure, index))
     .join("");
@@ -100,6 +94,7 @@ function makeFieldHtml(
             ${output}
           </ol>
         </li>
+        <li>isArray: see <a href="https://meta.wikimedia.org/wiki/Web2Cit/Early_adopters#Translation_field_types">early adopter guidelines</a></li>
         <li>pattern: see <a href="https://meta.wikimedia.org/wiki/Web2Cit/Early_adopters#Translation_field_types">early adopter guidelines</a></li>
         <li>valid: ${valid}</li>
         <li>applicable: ${applicable}</li>
