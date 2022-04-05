@@ -49,12 +49,7 @@ async function handler(
 
   let domain;
   try {
-    domain = new Domain(
-      target.domain,
-      undefined,
-      // fixme: change the order here
-      fallbackTemplate
-    );
+    domain = new Domain(target.domain);
   } catch (error) {
     if (error instanceof Error) {
       res
@@ -77,11 +72,11 @@ async function handler(
   // consider having an init method
   const templatesRevision = await domain.templates.getLatestRevision();
   if (templatesRevision !== undefined) {
-    domain.templates.loadConfiguration(templatesRevision.configuration);
+    domain.templates.loadRevision(templatesRevision);
   }
   const patternsRevision = await domain.patterns.getLatestRevision();
   if (patternsRevision !== undefined) {
-    domain.patterns.loadConfiguration(patternsRevision.configuration);
+    domain.patterns.loadRevision(patternsRevision);
   }
 
   let output;
