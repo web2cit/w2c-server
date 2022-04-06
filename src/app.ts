@@ -35,16 +35,35 @@ async function handler(
   req: Parameters<RequestHandler>[0],
   res: Parameters<RequestHandler>[1]
 ) {
-  const debug = req.path.split("/")[1] === "debug";
+  const match = req.url.match(
+    /^(?<debug>\/debug)?(?<sandbox>\/sandbox\/(?<user>[^/]+))?\/(?<url>.+)?$/
+  );
+
+  if (match === null) {
+    res.redirect("/");
+    return;
+  }
+
+  const { debug, user } = match.groups ?? {};
+  let { url } = match.groups ?? {};
+
+  if (url === undefined) {
+    // todo: provide an improved landing page
+    // maybe with a search field
+    // T302698
+    res.status(400).send("Specify a target URL");
+    return;
+  }
 
   let target;
   try {
-    target = new Webpage(req.params.url);
+    target = new Webpage(url);
   } catch {
     res.status(400).send("Invalid target URL");
     return;
   }
-  const url = target.url;
+
+  url = target.url.href;
 
   let domain;
   try {
@@ -62,10 +81,10 @@ async function handler(
     }
   }
 
-  if (req.params.user) {
+  if (user) {
     // todo: storage root should be given to the Domain constructor
-    domain.templates.storage.root = `User:${req.params.user}/Web2Cit/data/`;
-    domain.patterns.storage.root = `User:${req.params.user}/Web2Cit/data/`;
+    domain.templates.storage.root = `User:${user}/Web2Cit/data/`;
+    domain.patterns.storage.root = `User:${user}/Web2Cit/data/`;
   }
 
   // consider having an init method
@@ -230,17 +249,11 @@ async function handler(
 </html>
   `);
 }
-// may not be the best approach
-// alternatively, we may use a debug subdomain, but toolforge tools don't seem to support subdomains
-// we may use query string parameters, but that would mean passing the url as parameter
-// and we would need to escape it
-app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
-
-app.get("/debug/:url(*)", wrap(handler));
-
-app.get("/sandbox/:user/:url(*)", wrap(handler));
-
-app.get("/:url(*)", wrap(handler));
+// app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
+// app.get("/debug/:url(*)", wrap(handler));
+// app.get("/sandbox/:user/:url(*)", wrap(handler));
+// app.get("/:url(*)", wrap(handler));
+app.get("/*", wrap(handler));
 
 function htmlEncode(text: string): string {
   const map = new Map([
