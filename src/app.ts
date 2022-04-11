@@ -59,7 +59,7 @@ async function handler(
   try {
     target = new Webpage(url);
   } catch {
-    res.status(400).send("Invalid target URL");
+    res.status(400).send(`Invalid target URL: ${url}`);
     return;
   }
 
