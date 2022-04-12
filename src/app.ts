@@ -5,6 +5,11 @@ import { makeDebugHtml } from "./debug";
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+});
+
 // TODO: won't be needed anymore with Express v5
 // A wrapper function.
 // It takes fn as parameter, with fn an async version of a RequestHandler:
