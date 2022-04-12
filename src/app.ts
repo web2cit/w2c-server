@@ -238,7 +238,7 @@ async function handler(
   ${metaTags.join("")}
 </head>
 <body>
-  <p>Web2Cit translation for ${url}</p>
+  <p>Web2Cit translation for <a href="${url}">${url}</a>:</p>
   <ul>
   ${items.join("")}
   </ul>
