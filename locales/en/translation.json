@@ -1,0 +1,19 @@
+{
+  "results": {
+    "title": "Web2Cit",
+    "header": "Resumen de traducción Web2Cit para {{domain}}",
+    "config": "Using configuration files in:",
+    "catchall": "catch-all",
+    "labeledpattern": "{{label}} URL path pattern translation subgroup: {{pattern}}",
+    "unlabeledPattern": "URL path pattern translation subgroup: {{pattern}}",
+    "edit": "edit",
+    "target": "Translation for target:",
+    "translations": "Translation outputs",
+    "labeledTemplate": "Translation output using {{label}} template for path {{path}}",
+    "unlabeledTemplate": "Translation output using template for path {{path}}",
+    "fallbackTemplate": "Translation output using fallback template",
+    "tableHeaderField": "Field",
+
+    "debug": "Debugging information"
+ }
+}

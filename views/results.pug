@@ -1,0 +1,92 @@
+doctype html
+html(
+  xmlns="http://www.w3.org/1999/xhtml"
+  prefix="z:http://www.zotero.org/namespaces/export#"
+)
+  head
+    title= t('results.title')
+    link(
+      rel="canonical"
+      href=citation.url
+    )
+    each meta in metas
+      meta(
+        property=`${meta.prefix}:${meta.field}`
+        content=meta.content
+    )    
+  body
+    h1= t('results.header', { domain })
+    const storage = storage + path
+    p
+      | #{t('results.config')}
+      a(href="${storage} + prefix")= storage
+    })
+    each pattern in patterns
+      h2
+        = if (pattern.label === undefined) {
+          return t('results.unlabeledPattern', { pattern: pattern.pattern })
+        } else {
+          return t('results.labeledPattern', { label: pattern.label, pattern: pattern.pattern })
+        }
+        | (
+        a(href= storage + "patterns.json")= t('results.edit')
+        | )
+      each target in pattern.targets
+        h3
+          = t('results.target')
+          a(href= target.url)= target.path
+        h4= t('results.translations')
+        each translation, index in target.translations
+          const label = translation.template.label
+          const path = translation.template.path
+          if (path === undefined) {
+            h5= t('results.fallbackTemplate')
+          } else if (label === undefined) {
+            h5= t('results.unlabeledTemplate', { path });
+          } else {
+            h5= t('results.unlabeledTemplate', { label, path });
+          }
+          table
+            thead
+              tr
+                th= t('results.tableHeaderField')
+                th
+                  = t('results.tableHeaderOutput')
+                  | (
+                  a(href=storage.root + storage.path + storage.filename.templates)= t('results.edit')
+                  | )
+                th
+                  = t('results.tableHeaderExpectation')
+                  | (
+                  a(href=storage.root + storage.path + storage.filename.tests)= t('results.edit')
+                  | )
+                th= t('results.tableHeaderScore')
+            tbody
+            each field in translation.fields
+              tr
+                td
+                  = t('results.field.' + field.name)
+                  | (#{field.name})
+                if (field.output === undefined)
+                  td n/a
+                else
+                  td
+                    table
+                      tbody
+                      each value in field.output
+                        tr= value
+                if (field.test === undefined)
+                  td n/a
+                else
+                  td
+                    table
+                      tbody
+                      each value in field.test
+                        tr= value
+                if field.score === undefined 
+                  td n/a
+                else
+                  td field.score
+        if (debug) {
+          h4= t('results.debug')
+        }

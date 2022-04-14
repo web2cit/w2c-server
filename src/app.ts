@@ -1,9 +1,38 @@
 import express, { RequestHandler } from "express";
 import { Domain, Webpage, fallbackTemplate, HTTPResponseError } from "web2cit";
 import { makeDebugHtml } from "./debug";
+import i18next from "i18next";
+import i18nextMiddleware from "i18next-http-middleware";
+import Backend from "i18next-fs-backend";
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.set("views", "./views");
+app.set("view engine", "pug");
+
+i18next
+  .use(Backend)
+  // .use(languageDetector)
+  .use(i18nextMiddleware.LanguageDetector)
+  .init({
+    // debug: true,
+    // detection: {
+    //   order: ['customDetector']
+    // },
+    backend: {
+      loadPath: "./locales/{{lng}}/{{ns}}.json",
+      // addPath: __dirname + '/locales/{{lng}}/{{ns}}.missing.json'
+    },
+    fallbackLng: "en",
+    preload: ["en"],
+    // nonExplicitSupportedLngs: true,
+    // supportedLngs: ['en', 'de'],
+    // load: 'languageOnly',
+    // saveMissing: true
+  });
+
+app.use(i18nextMiddleware.handle(i18next));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -140,6 +169,9 @@ async function handler(
       ReturnType<Domain["translate"]>
     >["translation"]["outputs"][number]["citation"]
   >;
+
+  // todo
+  const applicableTemplates = [];
   const citations = output.translation.outputs.reduce(
     (citations: Citation[], output) => {
       const citation = output.citation;
@@ -161,8 +193,56 @@ async function handler(
     return;
   }
 
-  const metaTags: string[] = [];
-  const items: string[] = [];
+  // initialize the result object
+  const result: Result = {
+    domain: domain.domain,
+    storage: {
+      // todo: the domain object should have a storage property
+      // assuming here all configuration objects have the same storage root and path
+      root: domain.templates.storage.root,
+      path: domain.templates.storage.path,
+      filenames: {
+        templates: domain.templates.storage.filename,
+        patterns: domain.patterns.storage.filename,
+        // todo: do not hard-code tests filename
+        tests: "tests.json",
+      },
+    },
+    patterns: [],
+    citations: [],
+  };
+
+  // todo: multiple patterns will be needed if multiple targets are supported
+  const resultPattern: ResultPattern = {
+    // todo: w2c-core should output pattern label
+    label: undefined,
+    pattern: output.translation.pattern!,
+    targets: [],
+  };
+
+  const resultTarget: ResultTarget = {
+    href: domain.domain + output.target.path,
+    path: output.target.path,
+    translations: [],
+  };
+
+  // fix: get from applicableTemplates array
+  const template = output.translation.outputs[0].template;
+
+  const resultTranslation: ResultTranslation = {
+    template: {
+      // todo: w2c-core should output template label
+      label: undefined,
+      path: template.path,
+    },
+    fields: [],
+  };
+
+  const resultCitation: ResultCitation = {
+    url: citation.url,
+    data: [],
+  };
+
   (Object.keys(citation) as Array<keyof typeof citation>).forEach((field) => {
     if (field === "key" || field === "version" || field === "source") return;
 
@@ -193,13 +273,20 @@ async function handler(
         });
       }
     }
+    const resultField: ResultField = {
+      name: field,
+      output: [],
+    };
     contents.forEach((content) => {
-      const htmlContent = htmlEncode(content);
-      const tag = `<meta property="${prefix}:${field}" content="${htmlContent}"/>`;
-      metaTags.push(tag);
-      const item = `<li><b>${field}:</b> ${htmlContent}</li>`;
-      items.push(item);
+      // const htmlContent = htmlEncode(content);
+      resultCitation.data.push({
+        prefix,
+        field,
+        content,
+      });
+      resultField.output!.push(content);
     });
+    resultTranslation.fields.push(resultField);
   });
 
   // create debug output
@@ -217,42 +304,49 @@ async function handler(
       `Use the <a href="${href}">debug endpoint</a> for a detailed output.</p>`;
   }
 
-  // todo: domain configuration object should have a shortcut for this
-  const templatesPath =
-    domain.templates.mediawiki.instance +
-    domain.templates.mediawiki.wiki +
-    domain.templates.storage.root +
-    domain.templates.storage.path +
-    domain.templates.storage.filename;
-  const patternsPath =
-    domain.patterns.mediawiki.instance +
-    domain.patterns.mediawiki.wiki +
-    domain.patterns.storage.root +
-    domain.patterns.storage.path +
-    domain.patterns.storage.filename;
+  result.citations.push(resultCitation);
+  resultTarget.translations.push(resultTranslation);
+  resultPattern.targets.push(resultTarget);
+  result.patterns.push(resultPattern);
 
-  // fixme: publisher mapped to multiple fields ends in extra
-  res.send(`
-<!DOCTYPE html>
-<html
-  xmlns="http://www.w3.org/1999/xhtml"
-  prefix="z:http://www.zotero.org/namespaces/export#"
->
-<head>
-  <link rel="canonical" href="${citation.url}" />
-  ${metaTags.join("")}
-</head>
-<body>
-  <p>Web2Cit translation for <a href="${url}">${url}</a>:</p>
-  <ul>
-  ${items.join("")}
-  </ul>
-  <p>Templates configuration: <a href="${templatesPath}">${templatesPath}</a></p>
-  <p>Patterns configuration: <a href="${patternsPath}">${patternsPath}</a></p>
-  ${debugHtml}
-</body>
-</html>
-  `);
+  // todo: domain configuration object should have a shortcut for this
+  // const templatesPath =
+  //   domain.templates.mediawiki.instance +
+  //   domain.templates.mediawiki.wiki +
+  //   domain.templates.storage.root +
+  //   domain.templates.storage.path +
+  //   domain.templates.storage.filename;
+  // const patternsPath =
+  //   domain.patterns.mediawiki.instance +
+  //   domain.patterns.mediawiki.wiki +
+  //   domain.patterns.storage.root +
+  //   domain.patterns.storage.path +
+  //   domain.patterns.storage.filename;
+
+  res.render("results", result);
+
+  //   // fixme: publisher mapped to multiple fields ends in extra
+  //   res.send(`
+  // <!DOCTYPE html>
+  // <html
+  //   xmlns="http://www.w3.org/1999/xhtml"
+  //   prefix="z:http://www.zotero.org/namespaces/export#"
+  // >
+  // <head>
+  //   <link rel="canonical" href="${citation.url}" />
+  //   ${metaTags.join("")}
+  // </head>
+  // <body>
+  //   <p>Web2Cit translation for <a href="${url}">${url}</a>:</p>
+  //   <ul>
+  //   ${items.join("")}
+  //   </ul>
+  //   <p>Templates configuration: <a href="${templatesPath}">${templatesPath}</a></p>
+  //   <p>Patterns configuration: <a href="${patternsPath}">${patternsPath}</a></p>
+  //   ${debugHtml}
+  // </body>
+  // </html>
+  //   `);
 }
 // app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
 // app.get("/debug/:url(*)", wrap(handler));
@@ -282,3 +376,56 @@ class RequestError extends Error {
     super(message);
   }
 }
+
+type Result = {
+  domain: string;
+  storage: {
+    root: string;
+    path: string;
+    filenames: {
+      templates: string;
+      patterns: string;
+      tests: string;
+    };
+  };
+  patterns: ResultPattern[];
+  citations: ResultCitation[];
+};
+
+type ResultPattern = {
+  label?: string;
+  pattern: string;
+  targets: ResultTarget[];
+};
+
+type ResultTarget = {
+  href: string;
+  path: string;
+  translations: ResultTranslation[];
+};
+
+type ResultTranslation = {
+  template: {
+    label?: string;
+    path?: string;
+  };
+  fields: ResultField[];
+};
+
+type ResultField = {
+  name: string;
+  output?: string[];
+  test?: string[];
+  score?: number;
+};
+
+type ResultCitation = {
+  url: string;
+  data: ResultCitationData[];
+};
+
+type ResultCitationData = {
+  prefix: string;
+  field: string;
+  content: string;
+};
