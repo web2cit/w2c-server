@@ -1,19 +1,32 @@
 {
   "results": {
     "title": "Web2Cit",
-    "header": "Resumen de traducción Web2Cit para {{domain}}",
+    "header": "Web2Cit translation summary for domain {{domain}}",
     "config": "Using configuration files in:",
     "catchall": "catch-all",
-    "labeledpattern": "{{label}} URL path pattern translation subgroup: {{pattern}}",
-    "unlabeledPattern": "URL path pattern translation subgroup: {{pattern}}",
+    "pattern_labelled": "Translation subgroup for \"{{label}}\" URL path pattern: {{pattern}}",
+    "pattern_unlabelled": "Translation subgroup for URL path pattern: {{pattern}}",
     "edit": "edit",
-    "target": "Translation for target:",
-    "translations": "Translation outputs",
-    "labeledTemplate": "Translation output using {{label}} template for path {{path}}",
-    "unlabeledTemplate": "Translation output using template for path {{path}}",
-    "fallbackTemplate": "Translation output using fallback template",
-    "tableHeaderField": "Field",
-
+    "target": "Translation results for target:",
+    "template_labelled": "Translation result using applicable template #{{index}}, \"{{label}}\"",
+    "template_unlabelled": "Translation result using applicable template #{{index}}",
+    "template_fallback": "Translation result using fallback template",
+    "templatePath": "Template path: {{path}}",
+    "fieldHeader": "Field",
+    "outputHeader": "Translation output",
+    "testHeader": "Expected output",
+    "scoreHeader": "Score",
+    "nonApplicable": "n/a",
     "debug": "Debugging information"
- }
+  },
+  "fields": {
+    "itemType": "Item type",
+    "title": "Title",
+    "authorLast": "Author last names",
+    "authorFirst": "Author first names",
+    "date": "Publication date",
+    "publishedIn": "Published in",
+    "publishedBy": "Published by",
+    "language": "Language"
+  }
 }

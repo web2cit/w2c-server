@@ -199,7 +199,9 @@ async function handler(
     storage: {
       // todo: the domain object should have a storage property
       // assuming here all configuration objects have the same storage root and path
-      root: domain.templates.storage.root,
+      instance: domain.templates.mediawiki.instance,
+      wiki: domain.templates.mediawiki.wiki,
+      prefix: domain.templates.storage.root,
       path: domain.templates.storage.path,
       filenames: {
         templates: domain.templates.storage.filename,
@@ -221,7 +223,8 @@ async function handler(
   };
 
   const resultTarget: ResultTarget = {
-    href: domain.domain + output.target.path,
+    // todo: support multiple targets
+    href: target.url.href,
     path: output.target.path,
     translations: [],
   };
@@ -229,6 +232,7 @@ async function handler(
   // fix: get from applicableTemplates array
   const template = output.translation.outputs[0].template;
 
+  // todo: support multiple translations per target
   const resultTranslation: ResultTranslation = {
     template: {
       // todo: w2c-core should output template label
@@ -237,6 +241,16 @@ async function handler(
     },
     fields: [],
   };
+
+  // fixme: w2c-core should output the web2cit citation
+  // +1 add Citation object to Web2Cit Core
+  // why are we returning JSONs anyway? Why not return full objects?
+  output.translation.outputs[0].template.fields?.forEach((field) => {
+    resultTranslation.fields.push({
+      name: field.name,
+      output: field.output,
+    });
+  });
 
   const resultCitation: ResultCitation = {
     url: citation.url,
@@ -273,10 +287,6 @@ async function handler(
         });
       }
     }
-    const resultField: ResultField = {
-      name: field,
-      output: [],
-    };
     contents.forEach((content) => {
       // const htmlContent = htmlEncode(content);
       resultCitation.data.push({
@@ -284,10 +294,14 @@ async function handler(
         field,
         content,
       });
-      resultField.output!.push(content);
     });
-    resultTranslation.fields.push(resultField);
   });
+
+  resultTarget.translations.push(resultTranslation);
+  resultPattern.targets.push(resultTarget);
+  result.patterns.push(resultPattern);
+
+  result.citations.push(resultCitation);
 
   // create debug output
   let debugHtml;
@@ -303,11 +317,6 @@ async function handler(
       `<p>Not what you expected? ` +
       `Use the <a href="${href}">debug endpoint</a> for a detailed output.</p>`;
   }
-
-  result.citations.push(resultCitation);
-  resultTarget.translations.push(resultTranslation);
-  resultPattern.targets.push(resultTarget);
-  result.patterns.push(resultPattern);
 
   // todo: domain configuration object should have a shortcut for this
   // const templatesPath =
@@ -380,7 +389,9 @@ class RequestError extends Error {
 type Result = {
   domain: string;
   storage: {
-    root: string;
+    instance: string;
+    wiki: string;
+    prefix: string;
     path: string;
     filenames: {
       templates: string;
