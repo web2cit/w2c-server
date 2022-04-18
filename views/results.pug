@@ -17,6 +17,7 @@ html(
         text-align: center;
       }
       table.output {
+        border-collapse: separate;
         margin: 0 auto;
       }
     - const citation = citations[0];
@@ -43,6 +44,7 @@ html(
           target="_blank"
         )= storageRoot
     // results area
+    hr
     main
       each pattern in patterns
         // pattern block
@@ -134,5 +136,16 @@ html(
               footer
                 if debug
                   h4= t('results.debug')
-    footer
-    // if debug=false, link to debug version of results
+    if debugHref
+      hr
+      footer
+        p
+        | Translation outputs are not what you expected?
+        |
+        a(href=debugHref) Enable debugging
+        |
+        | to show detailed translation output information.
+    // todo: consider linking to default endpoint too
+    // Too much information?
+    // Disable debugging
+    // to hide detailed translation output information.

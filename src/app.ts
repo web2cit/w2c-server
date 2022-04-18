@@ -246,10 +246,12 @@ async function handler(
   // +1 add Citation object to Web2Cit Core
   // why are we returning JSONs anyway? Why not return full objects?
   output.translation.outputs[0].template.fields?.forEach((field) => {
-    resultTranslation.fields.push({
-      name: field.name,
-      output: field.output,
-    });
+    if (field.valid) {
+      resultTranslation.fields.push({
+        name: field.name,
+        output: field.output,
+      });
+    }
   });
 
   const resultCitation: ResultCitation = {
@@ -303,36 +305,20 @@ async function handler(
 
   result.citations.push(resultCitation);
 
-  // create debug output
-  let debugHtml;
-  if (debug) {
-    debugHtml = makeDebugHtml(
-      output.translation,
-      domain.patterns.currentRevid,
-      domain.templates.currentRevid
-    );
-  } else {
-    const href = "/debug" + req.url;
-    debugHtml =
-      `<p>Not what you expected? ` +
-      `Use the <a href="${href}">debug endpoint</a> for a detailed output.</p>`;
-  }
+  // // create debug output
+  // let debugHtml;
+  // if (debug) {
+  //   debugHtml = makeDebugHtml(
+  //     output.translation,
+  //     domain.patterns.currentRevid,
+  //     domain.templates.currentRevid
+  //   );
+  // }
 
-  // todo: domain configuration object should have a shortcut for this
-  // const templatesPath =
-  //   domain.templates.mediawiki.instance +
-  //   domain.templates.mediawiki.wiki +
-  //   domain.templates.storage.root +
-  //   domain.templates.storage.path +
-  //   domain.templates.storage.filename;
-  // const patternsPath =
-  //   domain.patterns.mediawiki.instance +
-  //   domain.patterns.mediawiki.wiki +
-  //   domain.patterns.storage.root +
-  //   domain.patterns.storage.path +
-  //   domain.patterns.storage.filename;
-
-  res.render("results", result);
+  res.render("results", {
+    ...result,
+    debugHref: debug ? undefined : "/debug" + req.url,
+  });
 
   //   // fixme: publisher mapped to multiple fields ends in extra
   //   res.send(`
