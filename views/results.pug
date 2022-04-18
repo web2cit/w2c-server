@@ -9,6 +9,16 @@ html(
       section {
         padding-left: 1%;
       }
+      th, td {
+        border: 1px solid;
+      }
+      table {
+        border-collapse: collapse;
+        text-align: center;
+      }
+      table.output {
+        margin: 0 auto;
+      }
     - const citation = citations[0];
     if citation !== undefined
       link(
@@ -93,32 +103,34 @@ html(
                             | )
                           th= t('results.scoreHeader')
                       tbody
-                      each field in translation.fields
-                        tr
-                          td
-                            = t('fields.' + field.name)
-                            br
-                            | (#{field.name})
-                          if (field.output === undefined)
-                            td= t('results.nonApplicable')
-                          else
+                        each field in translation.fields
+                          tr
                             td
-                              table
-                                tbody
-                                each value in field.output
-                                  tr= value
-                          if (field.test === undefined)
-                            td= t('results.nonApplicable')
-                          else
-                            td
-                              table
-                                tbody
-                                each value in field.test
-                                  tr= value
-                          if field.score === undefined 
-                            td= t('results.nonApplicable')
-                          else
-                            td field.score
+                              = t('fields.' + field.name)
+                              br
+                              | (#{field.name})
+                            if (field.output === undefined)
+                              td= t('results.nonApplicable')
+                            else
+                              td
+                                table.output
+                                  tbody
+                                    each value in field.output
+                                      tr
+                                        td= value
+                            if (field.test === undefined)
+                              td= t('results.nonApplicable')
+                            else
+                              td
+                                table.output
+                                  tbody
+                                    each value in field.test
+                                      tr
+                                        td= value
+                            if field.score === undefined 
+                              td= t('results.nonApplicable')
+                            else
+                              td field.score
               footer
                 if debug
                   h4= t('results.debug')
