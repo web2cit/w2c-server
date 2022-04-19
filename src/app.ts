@@ -1,15 +1,13 @@
 import express, { RequestHandler } from "express";
 import { Domain, Webpage, fallbackTemplate, HTTPResponseError } from "web2cit";
-import { makeDebugHtml } from "./debug";
 import i18next from "i18next";
 import i18nextMiddleware from "i18next-http-middleware";
 import Backend from "i18next-fs-backend";
+import { renderToStaticMarkup } from "react-dom/server";
+import ResultsPageWrapper from "./components/ResultsPageWrapper";
 
 const app = express();
 const port = process.env.PORT || 3000;
-
-app.set("views", "./views");
-app.set("view engine", "pug");
 
 i18next
   .use(Backend)
@@ -402,42 +400,4 @@ type Result = {
   };
   patterns: ResultPattern[];
   citations: ResultCitation[];
-};
-
-type ResultPattern = {
-  label?: string;
-  pattern: string;
-  targets: ResultTarget[];
-};
-
-type ResultTarget = {
-  href: string;
-  path: string;
-  translations: ResultTranslation[];
-};
-
-type ResultTranslation = {
-  template: {
-    label?: string;
-    path?: string;
-  };
-  fields: ResultField[];
-};
-
-type ResultField = {
-  name: string;
-  output?: string[];
-  test?: string[];
-  score?: number;
-};
-
-type ResultCitation = {
-  url: string;
-  data: ResultCitationData[];
-};
-
-type ResultCitationData = {
-  prefix: string;
-  field: string;
-  content: string;
 };

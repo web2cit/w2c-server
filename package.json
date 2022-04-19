@@ -28,6 +28,8 @@
     "@types/i18next-fs-backend": "^1.1.2",
     "@types/jest": "^27.4.0",
     "@types/node": "^12.20.46",
+    "@types/react": "^18.0.5",
+    "@types/react-dom": "^18.0.1",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
     "eslint": "^8.6.0",
@@ -44,7 +46,8 @@
     "i18next": "^21.6.16",
     "i18next-fs-backend": "^1.1.4",
     "i18next-http-middleware": "^3.2.0",
-    "pug": "^3.0.2",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "web2cit": "file:../w2c-core"
   }
 }
