@@ -29,7 +29,8 @@ i18next
     // nonExplicitSupportedLngs: true,
     // supportedLngs: ['en', 'de'],
     // load: 'languageOnly',
-    // saveMissing: true
+    // saveMissing: true,
+    keySeparator: false,
   });
 
 app.use(i18nextMiddleware.handle(i18next));
@@ -315,9 +316,23 @@ async function handler(
   //   );
   // }
 
+  // todo: support switching debugging on and off
+  // with base endpoint (T305750)
+  let debugHref, nodebugHref;
+  if (debug) {
+    debugHref = req.url;
+    nodebugHref = req.url.replace("/debug", "");
+  } else {
+    debugHref = "/debug" + req.url;
+    nodebugHref = req.url;
+  }
+
   res.render("results", {
+    // fixme: consider making the result object a property of the options object
     ...result,
-    debugHref: debug ? undefined : "/debug" + req.url,
+    debug,
+    debugHref,
+    nodebugHref,
   });
 
   //   // fixme: publisher mapped to multiple fields ends in extra

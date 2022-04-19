@@ -4,7 +4,7 @@ html(
   prefix="z:http://www.zotero.org/namespaces/export#"
 )
   head
-    title= t('results.title')
+    title= t('title')
     style.
       section {
         padding-left: 1%;
@@ -33,11 +33,11 @@ html(
         )
   body
     header
-      h1!= t('results.header', { domain: `<i>${domain}</i>`, interpolation: { escapeValue: false } })
+      h1!= t('header', { domain: `<i>${domain}</i>`, interpolation: { escapeValue: false } })
       - const storageRoot = storage.instance + storage.wiki + storage.prefix;
       - const storagePath = storageRoot + storage.path;
       p
-        | #{t('results.config')}
+        | #{t('config')}
         |
         a(
           href=`${storage.instance + storage.wiki}Special:PrefixIndex/${storage.prefix + storage.path}`
@@ -51,20 +51,20 @@ html(
         section.pattern
           - const context = pattern.label === undefined ? "unlabelled" : "labelled";
           h2
-            = t('results.pattern', { pattern: pattern.pattern, label: pattern.label, context })
+            = t('pattern', { pattern: pattern.pattern, label: pattern.label, context })
             |
             | (
             a(
               href= storagePath + storage.filenames.patterns
               target="_blank"
-            )= t('results.edit')
+            )= t('edit')
             | )
           each target in pattern.targets
             // target block
             section.target-block
               header
                 h3
-                  | #{t('results.target')}
+                  | #{t('target')}
                   |
                   a(href=target.href target="_blank")= target.path
               main.translation-list
@@ -78,41 +78,41 @@ html(
                     else if (label === undefined) context = "unlabelled";
                     else context = "labelled";
                   section.translation-block
-                    h5= t('results.template', { index: index + 1, label, context } )
+                    h4= t('template', { index: index + 1, label, context } )
                     if path
-                      p!= t('results.templatePath', { path, interpolation: { escapeValue: false } })
+                      p!= t('templatePath', { path, interpolation: { escapeValue: false } })
                     table.translation-table
                       thead
                         tr
-                          th= t('results.fieldHeader')
+                          th= t('fieldHeader')
                           th
-                            = t('results.outputHeader')
+                            = t('outputHeader')
                             br
                             | (
                             a(
                               href=storagePath + storage.filenames.templates
                               target="_blank"
-                            )= t('results.edit')
+                            )= t('edit')
                             | )
                           th
-                            = t('results.testHeader')
+                            = t('testHeader')
                             br
                             | (
                             a(
                               href=storagePath + storage.filenames.tests
                               target="_blank"
-                            )= t('results.edit')
+                            )= t('edit')
                             | )
-                          th= t('results.scoreHeader')
+                          th= t('scoreHeader')
                       tbody
                         each field in translation.fields
                           tr
                             td
-                              = t('fields.' + field.name)
+                              = t('field.' + field.name)
                               br
                               | (#{field.name})
                             if (field.output === undefined)
-                              td= t('results.nonApplicable')
+                              td= t('nonApplicable')
                             else
                               td
                                 table.output
@@ -121,7 +121,7 @@ html(
                                       tr
                                         td= value
                             if (field.test === undefined)
-                              td= t('results.nonApplicable')
+                              td= t('nonApplicable')
                             else
                               td
                                 table.output
@@ -130,22 +130,23 @@ html(
                                       tr
                                         td= value
                             if field.score === undefined 
-                              td= t('results.nonApplicable')
+                              td= t('nonApplicable')
                             else
                               td field.score
               footer
                 if debug
-                  h4= t('results.debug')
-    if debugHref
-      hr
-      footer
-        p
-        | Translation outputs are not what you expected?
-        |
-        a(href=debugHref) Enable debugging
-        |
-        | to show detailed translation output information.
-    // todo: consider linking to default endpoint too
-    // Too much information?
-    // Disable debugging
-    // to hide detailed translation output information.
+                  h4= t('debug')
+    hr
+    footer
+      if debug
+        -
+          const disable = (
+            `<a href="${nodebugHref}">$t(debug.disable)</a>`
+          )
+        p!= t('debug.disable.description', { disable, interpolation: { escapeValue: false, skipOnVariables: false } })
+      else
+        -
+          const enable = (
+            `<a href="${debugHref}">$t(debug.enable)</a>`
+          )
+        p!= t('debug.enable.description', { enable, interpolation: { escapeValue: false, skipOnVariables: false } })
