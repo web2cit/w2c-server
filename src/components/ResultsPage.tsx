@@ -1,20 +1,69 @@
 import React, { useContext } from "react";
 import ResultsPageContext from "./ResultsPageContext";
+import HeadMetadata from "./HeadMetadata";
+import ResultsHeader from "./ResultsHeader";
+import PatternSection from "./PatternSection";
+import { TranslationPattern, ResultCitation } from "../types";
 
 export interface ResultsPageProps {
   domain: string;
-  patterns: ResultPattern[];
+  patterns: TranslationPattern[];
   citations: ResultCitation[];
+  debugHref: string;
+  nodebugHref: string;
 }
 
 export default function (props: ResultsPageProps) {
-  const { t } = useContext(ResultsPageContext);
+  const { t, debug } = useContext(ResultsPageContext);
+  const debugEnable = `<a href=${props.debugHref}}>${t("debug.enable")}</a>`;
+  const debugDisable = `<a href=${props.nodebugHref}}>${t(
+    "debug.disable"
+  )}</a>`;
   return (
-    <html>
+    <html
+      // xmlns="http://www.w3.org/1999/xhtml"
+      prefix="z:http://www.zotero.org/namespaces/export#"
+    >
       <head>
         <title>{t("title")}</title>
+        <link rel="stylesheet" href="/results.css" />
+        <HeadMetadata citations={props.citations} />
       </head>
-      <body>Body</body>
+      <body>
+        <ResultsHeader domain={props.domain} headingLevel={1} />
+        <hr />
+        <main>
+          {props.patterns.map((pattern) => (
+            <PatternSection
+              pattern={pattern}
+              headingLevel={2}
+              key={pattern.pattern}
+            />
+          ))}
+        </main>
+        <hr />
+        <footer>
+          <p
+            dangerouslySetInnerHTML={{
+              __html: debug
+                ? t("debug.disable.description", {
+                    disable: debugDisable,
+                    interpolation: {
+                      escapeValue: false,
+                      skipOnVariables: false,
+                    },
+                  })
+                : t("debug.enable.description", {
+                    enable: debugEnable,
+                    interpolation: {
+                      escapeValue: false,
+                      skipOnVariables: false,
+                    },
+                  }),
+            }}
+          />
+        </footer>
+      </body>
     </html>
   );
 }

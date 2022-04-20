@@ -15,8 +15,8 @@ export default function (props: OutputCellProps) {
       ) : (
         <table className="output">
           <tbody>
-            {props.output.map((value) => (
-              <tr>
+            {props.output.map((value, index) => (
+              <tr key={index}>
                 <td>{value}</td>
               </tr>
             ))}

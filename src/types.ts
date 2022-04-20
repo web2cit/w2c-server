@@ -1,7 +1,7 @@
 export type TranslationSummary = {
   domain: string;
   patterns: TranslationPattern[];
-  citations: Citation[];
+  citations: ResultCitation[];
 };
 
 export type TranslationPattern = {
@@ -33,7 +33,7 @@ export type TranslationField = {
 
 export type TranslationOutput = string[] | undefined;
 
-type Citation = {
+export type ResultCitation = {
   url: string;
   data: CitationData[];
 };

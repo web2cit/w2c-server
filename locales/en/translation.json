@@ -1,6 +1,6 @@
 {
   "title": "Web2Cit",
-  "header": "Web2Cit translation summary for domain {{domain}}",
+  "header": "Web2Cit translation summary for domain:",
   "config": "Using configuration files in:",
   "catchall": "catch-all",
   "pattern_labelled": "Translation subgroup for \"{{label}}\" URL path pattern: {{pattern}}",
@@ -10,7 +10,7 @@
   "template_labelled": "Translation result using applicable template #{{index}}, \"{{label}}\"",
   "template_unlabelled": "Translation result using applicable template #{{index}}",
   "template_fallback": "Translation result using fallback template",
-  "templatePath": "Template path: {{path}}",
+  "templatePath": "Template path:",
   "fieldHeader": "Field",
   "outputHeader": "Translation output",
   "testHeader": "Expected output",

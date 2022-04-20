@@ -5,6 +5,12 @@ import i18nextMiddleware from "i18next-http-middleware";
 import Backend from "i18next-fs-backend";
 import { renderToStaticMarkup } from "react-dom/server";
 import ResultsPageWrapper from "./components/ResultsPageWrapper";
+import {
+  TranslationPattern,
+  TranslationTarget,
+  TranslationResult,
+  ResultCitation,
+} from "./types";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -37,6 +43,8 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   next();
 });
+
+app.use(express.static("public"));
 
 // TODO: won't be needed anymore with Express v5
 // A wrapper function.
@@ -192,8 +200,8 @@ async function handler(
     return;
   }
 
-  // initialize the result object
-  const result: Result = {
+  // todo: remove this object
+  const result = {
     domain: domain.domain,
     storage: {
       // todo: the domain object should have a storage property
@@ -209,30 +217,30 @@ async function handler(
         tests: "tests.json",
       },
     },
-    patterns: [],
-    citations: [],
+    patterns: [] as TranslationPattern[],
+    citations: [] as ResultCitation[],
   };
 
   // todo: multiple patterns will be needed if multiple targets are supported
-  const resultPattern: ResultPattern = {
+  const resultPattern: TranslationPattern = {
     // todo: w2c-core should output pattern label
     label: undefined,
     pattern: output.translation.pattern!,
     targets: [],
   };
 
-  const resultTarget: ResultTarget = {
+  const resultTarget: TranslationTarget = {
     // todo: support multiple targets
     href: target.url.href,
     path: output.target.path,
-    translations: [],
+    results: [],
   };
 
   // fix: get from applicableTemplates array
-  const template = output.translation.outputs[0].template;
+  const template = output.translation.outputs[0]!.template;
 
   // todo: support multiple translations per target
-  const resultTranslation: ResultTranslation = {
+  const resultTranslation: TranslationResult = {
     template: {
       // todo: w2c-core should output template label
       label: undefined,
@@ -244,11 +252,13 @@ async function handler(
   // fixme: w2c-core should output the web2cit citation
   // +1 add Citation object to Web2Cit Core
   // why are we returning JSONs anyway? Why not return full objects?
-  output.translation.outputs[0].template.fields?.forEach((field) => {
+  output.translation.outputs[0]!.template.fields?.forEach((field) => {
     if (field.valid) {
       resultTranslation.fields.push({
         name: field.name,
         output: field.output,
+        test: undefined,
+        score: undefined,
       });
     }
   });
@@ -289,7 +299,7 @@ async function handler(
       }
     }
     contents.forEach((content) => {
-      // const htmlContent = htmlEncode(content);
+      const htmlContent = htmlEncode(content);
       resultCitation.data.push({
         prefix,
         field,
@@ -298,7 +308,7 @@ async function handler(
     });
   });
 
-  resultTarget.translations.push(resultTranslation);
+  resultTarget.results.push(resultTranslation);
   resultPattern.targets.push(resultTarget);
   result.patterns.push(resultPattern);
 
@@ -325,13 +335,23 @@ async function handler(
     nodebugHref = req.url;
   }
 
-  res.render("results", {
-    // fixme: consider making the result object a property of the options object
-    ...result,
-    debug,
-    debugHref,
-    nodebugHref,
-  });
+  const render = renderToStaticMarkup(
+    ResultsPageWrapper({
+      data: {
+        domain: result.domain,
+        patterns: result.patterns,
+        citations: result.citations,
+        debugHref: debugHref,
+        nodebugHref: nodebugHref,
+      },
+      context: {
+        t: req.t,
+        storage: result.storage,
+        debug: Boolean(debug),
+      },
+    })
+  );
+  res.send(render);
 
   //   // fixme: publisher mapped to multiple fields ends in extra
   //   res.send(`
@@ -384,20 +404,3 @@ class RequestError extends Error {
     super(message);
   }
 }
-
-type Result = {
-  domain: string;
-  storage: {
-    instance: string;
-    wiki: string;
-    prefix: string;
-    path: string;
-    filenames: {
-      templates: string;
-      patterns: string;
-      tests: string;
-    };
-  };
-  patterns: ResultPattern[];
-  citations: ResultCitation[];
-};

@@ -7,7 +7,13 @@ import ResultsPage, { ResultsPageProps } from "./ResultsPage";
 export default function (props: ResultsPageWrapperProps) {
   return (
     <ResultsPageContext.Provider value={props.context}>
-      <ResultsPage data={props.data} />
+      <ResultsPage
+        domain={props.data.domain}
+        patterns={props.data.patterns}
+        citations={props.data.citations}
+        debugHref={props.data.debugHref}
+        nodebugHref={props.data.nodebugHref}
+      />
     </ResultsPageContext.Provider>
   );
 }

@@ -43,7 +43,7 @@ export default function (props: ResultTableProps) {
       </thead>
       <tbody>
         {props.fields.map((field) => (
-          <ResultRow field={field} />
+          <ResultRow field={field} key={field.name} />
         ))}
       </tbody>
     </table>

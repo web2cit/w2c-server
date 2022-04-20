@@ -2,10 +2,12 @@ import React, { useContext } from "react";
 import ResultsPageContext from "./ResultsPageContext";
 import ResultTable from "./ResultTable";
 import { TranslationResult } from "../types";
+import H, { HeadingLevel } from "./Heading";
 
 interface TranslationResultSectionProps {
   translation: TranslationResult;
   index: number;
+  headingLevel?: HeadingLevel;
 }
 
 export default function (props: TranslationResultSectionProps) {
@@ -22,13 +24,13 @@ export default function (props: TranslationResultSectionProps) {
   }
   return (
     <section className="translation-block">
-      <h4>{t("template", { index, label, context: templateType })}</h4>
+      <H level={props.headingLevel}>
+        {t("template", { index, label, context: templateType })}
+      </H>
       {path && (
         <p>
-          {t("templatePath", {
-            path: <i>{path}</i>,
-            interpolation: { escapeValue: false },
-          })}
+          {t("templatePath") + " "}
+          <i>{path}</i>
         </p>
       )}
       <ResultTable fields={props.translation.fields} />

@@ -1,37 +1,43 @@
 import React, { useContext } from "react";
 import ResultsPageContext from "./ResultsPageContext";
-import TranslationResultSection from "./ResultTable";
-import { TranslationResult } from "../types";
+import TranslationResultSection from "./TranslationResultSection";
+import TranslationDebugFooter from "./TranslationDebugFooter";
+import { TranslationTarget } from "../types";
+import H, { HeadingLevel } from "./Heading";
 
-interface TranslationResultSectionProps {
-  translation: TranslationResult;
-  index: number;
+interface TargetSectionProps {
+  target: TranslationTarget;
+  headingLevel?: HeadingLevel;
 }
 
-export default function (props: TranslationResultSectionProps) {
-  const { t } = useContext(ResultsPageContext);
-  const index = props.index + 1;
-  const { path, label } = props.translation.template;
-  let templateType;
-  if (path === undefined) {
-    templateType = "fallback";
-  } else if (label === undefined) {
-    templateType = "unlabelled";
-  } else {
-    templateType = "labelled";
-  }
+export default function (props: TargetSectionProps) {
+  const { t, debug } = useContext(ResultsPageContext);
+  const headingLevel = props.headingLevel ?? 1;
   return (
-    <section className="translation-block">
-      <h4>{t("template", { index, label, context: templateType })}</h4>
-      {path && (
-        <p>
-          {t("templatePath", {
-            path: <i>{path}</i>,
-            interpolation: { escapeValue: false },
-          })}
-        </p>
+    <section className="target-block">
+      <header>
+        <H level={headingLevel}>
+          {t("target") + " "}
+          <a href={props.target.href} target="_blank">
+            {props.target.path}
+          </a>
+        </H>
+      </header>
+      <main>
+        {props.target.results.map((result, index) => (
+          <TranslationResultSection
+            translation={result}
+            index={index}
+            headingLevel={(headingLevel + 1) as HeadingLevel}
+            key={result.template.path ?? "fallback"}
+          />
+        ))}
+      </main>
+      {debug && (
+        <TranslationDebugFooter
+          headingLevel={(headingLevel + 1) as HeadingLevel}
+        />
       )}
-      <ResultTable fields={props.translation.fields} />
     </section>
   );
 }

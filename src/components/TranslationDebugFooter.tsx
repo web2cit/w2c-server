@@ -1,15 +1,16 @@
 import React, { useContext } from "react";
 import ResultsPageContext from "./ResultsPageContext";
+import H, { HeadingLevel } from "./Heading";
 
-// export interface TranslationDebugFooterProps {
-// };
+export interface TranslationDebugFooterProps {
+  headingLevel?: HeadingLevel;
+}
 
-// export default function(props: TranslationDebugFooterProps) {
-export default function () {
+export default function (props: TranslationDebugFooterProps) {
   const { t } = useContext(ResultsPageContext);
   return (
     <footer>
-      <h4>{t("debug")}</h4>
+      <H level={props.headingLevel}>{t("debug")}</H>
     </footer>
   );
 }
