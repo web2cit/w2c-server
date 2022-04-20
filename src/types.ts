@@ -1,16 +1,16 @@
 export type TranslationSummary = {
   domain: string;
-  patterns: TranslationPattern[];
-  citations: ResultCitation[];
+  patterns: PatternResult[];
+  citations: CitationResult[];
 };
 
-export type TranslationPattern = {
+export type PatternResult = {
   pattern: string;
   label?: string;
-  targets: TranslationTarget[];
+  targets: TargetResult[];
 };
 
-export type TranslationTarget = {
+export type TargetResult = {
   href: string;
   path: string;
   results: TranslationResult[];
@@ -33,7 +33,7 @@ export type TranslationField = {
 
 export type TranslationOutput = string[] | undefined;
 
-export type ResultCitation = {
+export type CitationResult = {
   url: string;
   data: CitationData[];
 };

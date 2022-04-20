@@ -28,5 +28,11 @@
   "field.date": "Fecha de publicación",
   "field.publishedIn": "Publicado en",
   "field.publishedBy": "Publicado por",
-  "field.language": "Idioma"
+  "field.language": "Idioma",
+  "error.noTarget": "Especifique un objetivo de traducción",
+  "error.invalidTarget": "Objetivo de traducción inválido",
+  "error.domain": "Web2Cit no pudo crear el objeto Dominio",
+  "error.external": "No fue posible obtener uno de los recursos externos necesarios para la traducción",
+  "error.external.details": "Recurso externo: {{url}} (Error {{code}}: {{message}})",
+  "error.noTranslation": "No se encontraron plantillas de traducción aplicables para el objetivo de traducción"
 }

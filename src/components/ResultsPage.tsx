@@ -3,22 +3,20 @@ import ResultsPageContext from "./ResultsPageContext";
 import HeadMetadata from "./HeadMetadata";
 import ResultsHeader from "./ResultsHeader";
 import PatternSection from "./PatternSection";
-import { TranslationPattern, ResultCitation } from "../types";
+import { PatternResult, CitationResult } from "../types";
 
 export interface ResultsPageProps {
   domain: string;
-  patterns: TranslationPattern[];
-  citations: ResultCitation[];
+  patterns: PatternResult[];
+  citations: CitationResult[];
   debugHref: string;
   nodebugHref: string;
 }
 
 export default function (props: ResultsPageProps) {
   const { t, debug } = useContext(ResultsPageContext);
-  const debugEnable = `<a href=${props.debugHref}}>${t("debug.enable")}</a>`;
-  const debugDisable = `<a href=${props.nodebugHref}}>${t(
-    "debug.disable"
-  )}</a>`;
+  const debugEnable = `<a href=${props.debugHref}>${t("debug.enable")}</a>`;
+  const debugDisable = `<a href=${props.nodebugHref}>${t("debug.disable")}</a>`;
   return (
     <html
       // xmlns="http://www.w3.org/1999/xhtml"

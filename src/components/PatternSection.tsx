@@ -1,11 +1,11 @@
 import React, { useContext } from "react";
 import ResultsPageContext from "./ResultsPageContext";
 import TargetSection from "./TargetSection";
-import { TranslationPattern } from "../types";
+import { PatternResult } from "../types";
 import H, { HeadingLevel } from "./Heading";
 
 interface PatternSectionProps {
-  pattern: TranslationPattern;
+  pattern: PatternResult;
   headingLevel?: HeadingLevel;
 }
 

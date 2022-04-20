@@ -6,11 +6,12 @@ import Backend from "i18next-fs-backend";
 import { renderToStaticMarkup } from "react-dom/server";
 import ResultsPageWrapper from "./components/ResultsPageWrapper";
 import {
-  TranslationPattern,
-  TranslationTarget,
+  PatternResult,
+  TargetResult,
   TranslationResult,
-  ResultCitation,
+  CitationResult,
 } from "./types";
+import { TranslationOutput } from "web2cit/dist/domain/domain";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -86,36 +87,32 @@ async function handler(
   }
 
   const { debug, user } = match.groups ?? {};
-  let { url } = match.groups ?? {};
+  const { url } = match.groups ?? {};
 
   if (url === undefined) {
     // todo: provide an improved landing page
     // maybe with a search field
     // T302698
-    res.status(400).send("Specify a target URL");
+    res.status(400).send(req.t("error.noTarget"));
     return;
   }
 
+  // multiple targets should be supported, for example to show translation
+  // results for all test webpages defined for a domain
   let target;
   try {
     target = new Webpage(url);
   } catch {
-    res.status(400).send(`Invalid target URL: ${url}`);
+    res.status(400).send(`${req.t("error.invalidTarget")}: ${url}`);
     return;
   }
-
-  url = target.url.href;
 
   let domain;
   try {
     domain = new Domain(target.domain);
   } catch (error) {
     if (error instanceof Error) {
-      res
-        .status(400)
-        .send(
-          `Something may be wrong with the target URL's domain: ${error.message}`
-        );
+      res.status(400).send(`${req.t("error.domain")}: ${error.message}`);
       return;
     } else {
       throw error;
@@ -123,12 +120,12 @@ async function handler(
   }
 
   if (user) {
-    // todo: storage root should be given to the Domain constructor
+    // todo: storage root should be given to the Domain constructor (T306553)
     domain.templates.storage.root = `User:${user}/Web2Cit/data/`;
     domain.patterns.storage.root = `User:${user}/Web2Cit/data/`;
   }
 
-  // consider having an init method
+  // todo: consider having an init method (T306555)
   const templatesRevision = await domain.templates.getLatestRevision();
   if (templatesRevision !== undefined) {
     domain.templates.loadRevision(templatesRevision);
@@ -138,136 +135,210 @@ async function handler(
     domain.patterns.loadRevision(patternsRevision);
   }
 
-  let output;
+  const targetOutputs: Awaited<ReturnType<Domain["translate"]>>[] = [];
+
   try {
     if (debug) {
-      output = await domain.translate(target, {
-        // return non-applicable template outputs
-        onlyApplicable: false,
-        //
-        templateFieldInfo: true,
-      });
+      targetOutputs.push(
+        await domain.translate(target, {
+          // return non-applicable template outputs
+          onlyApplicable: false,
+          //
+          templateFieldInfo: true,
+        })
+      );
     } else {
-      output = await domain.translate(target);
+      targetOutputs.push(
+        await domain.translate(target, {
+          // The core library currently returns mediawiki-compatible citation
+          // metadata. We need this in the server to embed citation metadata
+          // that Zotero and Citoid can understand. However, if we want to show
+          // translation and expected outputs we need to have access to the raw
+          // field outputs (i.e., not formatted as mediawiki citation)
+          // See T306132, about having a format-agnostic Citation object; and
+          // T302431, about updating output interfaces in w2c-core.
+          templateFieldInfo: true,
+        })
+      );
     }
   } catch (error) {
     if (error instanceof Error) {
       // fixme: we should treat differently 404 errors from target server
-      // than from citoid api
+      // than from citoid api; see T304773
       if (error instanceof HTTPResponseError) {
         const response = error.response;
-        res
-          .status(response.status)
-          .send(
-            "<h1>Failed to fetch one of the external resources required to translate the target URL</h1>" +
-              `External resource: ${error.url} (Error ${response.status}: ${response.statusText})`
-          );
+        res.status(response.status).send(
+          `<h1>${req.t("error.external")}</h1>` +
+            "<p>" +
+            req.t("error.external.details", {
+              url: error.url,
+              code: response.status,
+              message: response.statusText,
+            }) +
+            "</p>"
+        );
         return;
       }
     }
     throw error;
   }
 
-  // todo: consider changing w2c-core's TranslationOutput
-  // to include a citations property
-  // see T302431
-  type Citation = NonNullable<
-    Awaited<
-      ReturnType<Domain["translate"]>
-    >["translation"]["outputs"][number]["citation"]
-  >;
+  const patternMap: Map<string, PatternResult> = new Map();
+  const citations: CitationResult[] = [];
 
-  // todo
-  const applicableTemplates = [];
-  const citations = output.translation.outputs.reduce(
-    (citations: Citation[], output) => {
-      const citation = output.citation;
-      if (citation !== undefined) citations.push(citation);
-      return citations;
-    },
-    []
-  );
+  for (const targetOutput of targetOutputs) {
+    const pattern = targetOutput.translation.pattern;
+    if (pattern === undefined) {
+      // translation would have undefined pattern only if translate method was
+      // called with "forceTemplatePaths" option
+      console.warn(
+        `Skipping forced-template translated target: ${targetOutput.target.path}`
+      );
+      continue;
+    }
+    if (!patternMap.has(pattern)) {
+      const patternResult: PatternResult = {
+        pattern: pattern,
+        // todo: w2c-core should output pattern label
+        label: undefined,
+        targets: [],
+      };
+      patternMap.set(pattern, patternResult);
+    }
 
-  // todo: support multiple citations
-  // returned from multiple applicable templates
-  // if domain.translate is called with allTemplates = true
-  const citation = citations[0];
-  if (citation === undefined) {
+    // todo: support multiple targets;
+    // meanwhile, assuming all targets should have the same origin
+    const origin = target.url.origin;
+    const { targetResult, citations: targetCitations } = parseTargetOutput(
+      targetOutput,
+      origin
+    );
+
+    patternMap.get(pattern)!.targets.push(targetResult);
+    citations.push(...targetCitations);
+  }
+
+  const patterns = Array.from(patternMap.values());
+
+  if (citations.length === 0) {
     // fixes T305166
-    res
-      .status(404)
-      .send(`No applicable translation template found for target webpage.`);
+    res.status(404).send(req.t("error.noTranslation"));
     return;
   }
 
-  // todo: remove this object
-  const result = {
-    domain: domain.domain,
-    storage: {
-      // todo: the domain object should have a storage property
-      // assuming here all configuration objects have the same storage root and path
-      instance: domain.templates.mediawiki.instance,
-      wiki: domain.templates.mediawiki.wiki,
-      prefix: domain.templates.storage.root,
-      path: domain.templates.storage.path,
-      filenames: {
-        templates: domain.templates.storage.filename,
-        patterns: domain.patterns.storage.filename,
-        // todo: do not hard-code tests filename
-        tests: "tests.json",
+  // // create debug output
+  // let debugHtml;
+  // if (debug) {
+  //   debugHtml = makeDebugHtml(
+  //     output.translation,
+  //     domain.patterns.currentRevid,
+  //     domain.templates.currentRevid
+  //   );
+  // }
+
+  const render = renderToStaticMarkup(
+    ResultsPageWrapper({
+      data: {
+        domain: domain.domain,
+        patterns,
+        citations,
+        // todo: we will have to change this when we support a base endpoint
+        // controlled with query string parameters, see T305750
+        debugHref: debug ? req.url : "/debug" + req.url,
+        nodebugHref: debug ? req.url.replace("/debug", "") : req.url,
       },
-    },
-    patterns: [] as TranslationPattern[],
-    citations: [] as ResultCitation[],
-  };
+      context: {
+        t: req.t,
+        storage: {
+          // todo: the domain object should have a storage property (T306553)
+          // assuming here all configuration objects have the same storage root and path
+          instance: domain.templates.mediawiki.instance,
+          wiki: domain.templates.mediawiki.wiki,
+          prefix: domain.templates.storage.root,
+          path: domain.templates.storage.path,
+          filenames: {
+            templates: domain.templates.storage.filename,
+            patterns: domain.patterns.storage.filename,
+            // tests: domain.tests.storage.filename,
+            tests: "tests.json",
+          },
+        },
+        debug: Boolean(debug),
+      },
+    })
+  );
+  res.send("<!DOCTYPE html>\n" + render);
+}
+// app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
+// app.get("/debug/:url(*)", wrap(handler));
+// app.get("/sandbox/:user/:url(*)", wrap(handler));
+// app.get("/:url(*)", wrap(handler));
+app.get("/*", wrap(handler));
 
-  // todo: multiple patterns will be needed if multiple targets are supported
-  const resultPattern: TranslationPattern = {
-    // todo: w2c-core should output pattern label
-    label: undefined,
-    pattern: output.translation.pattern!,
-    targets: [],
-  };
-
-  const resultTarget: TranslationTarget = {
-    // todo: support multiple targets
-    href: target.url.href,
-    path: output.target.path,
+function parseTargetOutput(
+  targetOutput: TranslationOutput,
+  origin: string
+): {
+  targetResult: TargetResult;
+  citations: CitationResult[];
+} {
+  const targetResult: TargetResult = {
+    href: origin + targetOutput.target.path,
+    path: targetOutput.target.path,
     results: [],
   };
+  const debug = [];
+  const citations: CitationResult[] = [];
+  for (const templateOutput of targetOutput.translation.outputs) {
+    debug.push(templateOutput);
+    if (templateOutput.template.applicable) {
+      // citation should be defined for an applicable template
+      const citation = templateOutput.citation!;
+      const citationResult: CitationResult = {
+        url: citation.url,
+        data: getEmbeddableMetadata(citation),
+      };
+      citations.push(citationResult);
+      targetResult.results.push(makeTranslationResult(templateOutput));
+    }
+  }
+  return {
+    targetResult,
+    citations,
+  };
+}
 
-  // fix: get from applicableTemplates array
-  const template = output.translation.outputs[0]!.template;
-
-  // todo: support multiple translations per target
-  const resultTranslation: TranslationResult = {
+function makeTranslationResult(
+  templateOutput: TranslationOutput["translation"]["outputs"][number]
+): TranslationResult {
+  const translationResult: TranslationResult = {
     template: {
+      path: templateOutput.template.path,
       // todo: w2c-core should output template label
       label: undefined,
-      path: template.path,
     },
     fields: [],
   };
-
-  // fixme: w2c-core should output the web2cit citation
-  // +1 add Citation object to Web2Cit Core
-  // why are we returning JSONs anyway? Why not return full objects?
-  output.translation.outputs[0]!.template.fields?.forEach((field) => {
+  const fields = templateOutput.template.fields ?? [];
+  for (const field of fields) {
     if (field.valid) {
-      resultTranslation.fields.push({
+      translationResult.fields.push({
         name: field.name,
         output: field.output,
         test: undefined,
         score: undefined,
       });
     }
-  });
+  }
+  return translationResult;
+}
 
-  const resultCitation: ResultCitation = {
-    url: citation.url,
-    data: [],
-  };
-
+function getEmbeddableMetadata(
+  citation: NonNullable<
+    TranslationOutput["translation"]["outputs"][number]["citation"]
+  >
+): CitationResult["data"] {
+  const citationData: CitationResult["data"] = [];
   (Object.keys(citation) as Array<keyof typeof citation>).forEach((field) => {
     if (field === "key" || field === "version" || field === "source") return;
 
@@ -299,98 +370,14 @@ async function handler(
       }
     }
     contents.forEach((content) => {
-      const htmlContent = htmlEncode(content);
-      resultCitation.data.push({
+      citationData.push({
         prefix,
         field,
         content,
       });
     });
   });
-
-  resultTarget.results.push(resultTranslation);
-  resultPattern.targets.push(resultTarget);
-  result.patterns.push(resultPattern);
-
-  result.citations.push(resultCitation);
-
-  // // create debug output
-  // let debugHtml;
-  // if (debug) {
-  //   debugHtml = makeDebugHtml(
-  //     output.translation,
-  //     domain.patterns.currentRevid,
-  //     domain.templates.currentRevid
-  //   );
-  // }
-
-  // todo: support switching debugging on and off
-  // with base endpoint (T305750)
-  let debugHref, nodebugHref;
-  if (debug) {
-    debugHref = req.url;
-    nodebugHref = req.url.replace("/debug", "");
-  } else {
-    debugHref = "/debug" + req.url;
-    nodebugHref = req.url;
-  }
-
-  const render = renderToStaticMarkup(
-    ResultsPageWrapper({
-      data: {
-        domain: result.domain,
-        patterns: result.patterns,
-        citations: result.citations,
-        debugHref: debugHref,
-        nodebugHref: nodebugHref,
-      },
-      context: {
-        t: req.t,
-        storage: result.storage,
-        debug: Boolean(debug),
-      },
-    })
-  );
-  res.send(render);
-
-  //   // fixme: publisher mapped to multiple fields ends in extra
-  //   res.send(`
-  // <!DOCTYPE html>
-  // <html
-  //   xmlns="http://www.w3.org/1999/xhtml"
-  //   prefix="z:http://www.zotero.org/namespaces/export#"
-  // >
-  // <head>
-  //   <link rel="canonical" href="${citation.url}" />
-  //   ${metaTags.join("")}
-  // </head>
-  // <body>
-  //   <p>Web2Cit translation for <a href="${url}">${url}</a>:</p>
-  //   <ul>
-  //   ${items.join("")}
-  //   </ul>
-  //   <p>Templates configuration: <a href="${templatesPath}">${templatesPath}</a></p>
-  //   <p>Patterns configuration: <a href="${patternsPath}">${patternsPath}</a></p>
-  //   ${debugHtml}
-  // </body>
-  // </html>
-  //   `);
-}
-// app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
-// app.get("/debug/:url(*)", wrap(handler));
-// app.get("/sandbox/:user/:url(*)", wrap(handler));
-// app.get("/:url(*)", wrap(handler));
-app.get("/*", wrap(handler));
-
-function htmlEncode(text: string): string {
-  const map = new Map([
-    ["&", "&amp;"],
-    ["<", "&lt;"],
-    [">", "&gt;"],
-    ['"', "&quot;"],
-    ["'", "&#039;"],
-  ]);
-  return text.replace(/[&<>"']/g, (char) => map.get(char) ?? char);
+  return citationData;
 }
 
 app.listen(port, () => {

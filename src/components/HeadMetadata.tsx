@@ -1,8 +1,8 @@
 import React from "react";
-import { ResultCitation } from "../types";
+import { CitationResult } from "../types";
 
 export interface HeadMetadataProps {
-  citations: ResultCitation[];
+  citations: CitationResult[];
 }
 
 export default function (props: HeadMetadataProps) {

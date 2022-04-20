@@ -2,11 +2,11 @@ import React, { useContext } from "react";
 import ResultsPageContext from "./ResultsPageContext";
 import TranslationResultSection from "./TranslationResultSection";
 import TranslationDebugFooter from "./TranslationDebugFooter";
-import { TranslationTarget } from "../types";
+import { TargetResult } from "../types";
 import H, { HeadingLevel } from "./Heading";
 
 interface TargetSectionProps {
-  target: TranslationTarget;
+  target: TargetResult;
   headingLevel?: HeadingLevel;
 }
 

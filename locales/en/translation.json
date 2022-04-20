@@ -28,5 +28,11 @@
   "field.date": "Publication date",
   "field.publishedIn": "Published in",
   "field.publishedBy": "Published by",
-  "field.language": "Language"
+  "field.language": "Language",
+  "error.noTarget": "Specify a target URL",
+  "error.invalidTarget": "Invalid target URL",
+  "error.domain": "Web2Cit failed to create the Domain object",
+  "error.external": "Failed to fetch one of the external resources required to translate the target URL",
+  "error.external.details": "External resource: {{url}} (Error {{code}}: {{message}})",
+  "error.noTranslation": "No applicable translation template found for target webpage"
 }
