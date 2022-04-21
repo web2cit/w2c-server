@@ -17,10 +17,10 @@ export default function (props: ResultRowProps) {
   const field = props.field;
   return (
     <tr>
-      <td>
+      <th>
         {t("field." + field.name)}
         <br />({field.name})
-      </td>
+      </th>
       <OutputCell output={field.output} />
       {/* show notice until tests are supported
       <OutputCell output={field.test} /> */}

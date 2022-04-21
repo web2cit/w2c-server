@@ -33,8 +33,9 @@ export default function (props: TargetSectionProps) {
           />
         ))}
       </main>
-      {debug && (
+      {debug && props.target.debugJson && (
         <TranslationDebugFooter
+          debugJson={props.target.debugJson}
           headingLevel={(headingLevel + 1) as HeadingLevel}
         />
       )}

@@ -1,8 +1,9 @@
 section {
-    padding-left: 1%;
-  }
-th, td {
+  padding-left: 1%;
+}
+th, td {  
   border: 1px solid;
+  padding: 0.5em 1em;
 }
 table {
   border-collapse: collapse;
@@ -11,4 +12,15 @@ table {
 table.output {
   border-collapse: separate;
   margin: 0 auto;
+}
+table.json td {
+  text-align: left;
+}
+/* show row header label at the top and move down as user scrolls */
+table.json th {
+  vertical-align: top;
+}
+table.json th span {
+  position: sticky;
+  top: 0.5em;
 }

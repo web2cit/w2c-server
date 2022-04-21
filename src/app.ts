@@ -1,5 +1,5 @@
 import express, { RequestHandler } from "express";
-import { Domain, Webpage, fallbackTemplate, HTTPResponseError } from "web2cit";
+import { Domain, Webpage, HTTPResponseError } from "web2cit";
 import i18next from "i18next";
 import i18nextMiddleware from "i18next-http-middleware";
 import Backend from "i18next-fs-backend";
@@ -12,6 +12,7 @@ import {
   CitationResult,
 } from "./types";
 import { TranslationOutput } from "web2cit/dist/domain/domain";
+import { makeDebugJson } from "./debug";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -213,6 +214,13 @@ async function handler(
       targetOutput,
       origin
     );
+    if (debug) {
+      targetResult["debugJson"] = makeDebugJson(
+        targetOutput,
+        domain.patterns.currentRevid,
+        domain.templates.currentRevid
+      );
+    }
 
     patternMap.get(pattern)!.targets.push(targetResult);
     citations.push(...targetCitations);
@@ -225,16 +233,6 @@ async function handler(
     res.status(404).send(req.t("error.noTranslation"));
     return;
   }
-
-  // // create debug output
-  // let debugHtml;
-  // if (debug) {
-  //   debugHtml = makeDebugHtml(
-  //     output.translation,
-  //     domain.patterns.currentRevid,
-  //     domain.templates.currentRevid
-  //   );
-  // }
 
   const render = renderToStaticMarkup(
     ResultsPageWrapper({
@@ -287,10 +285,8 @@ function parseTargetOutput(
     path: targetOutput.target.path,
     results: [],
   };
-  const debug = [];
   const citations: CitationResult[] = [];
   for (const templateOutput of targetOutput.translation.outputs) {
-    debug.push(templateOutput);
     if (templateOutput.template.applicable) {
       // citation should be defined for an applicable template
       const citation = templateOutput.citation!;
