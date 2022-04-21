@@ -1,7 +1,7 @@
-import express, { RequestHandler } from "express";
+import express, { RequestHandler, response } from "express";
 import { Domain, Webpage, HTTPResponseError } from "web2cit";
-import i18next from "i18next";
-import i18nextMiddleware from "i18next-http-middleware";
+import i18next, { TFunction } from "i18next";
+import i18nextMiddleware, { handle } from "i18next-http-middleware";
 import Backend from "i18next-fs-backend";
 import { renderToStaticMarkup } from "react-dom/server";
 import ResultsPageWrapper from "./components/ResultsPageWrapper";
@@ -13,6 +13,7 @@ import {
 } from "./types";
 import { TranslationOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
+import { CitoidCitation } from "web2cit/dist/citoid";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -48,6 +49,85 @@ app.use((req, res, next) => {
 
 app.use(express.static("public"));
 
+type Options = {
+  citoid: boolean;
+  debug: boolean; // I don't think we have room for debug information in mediawiki format response
+  format: "html" | "json" | "mediawiki";
+  sandbox: string | undefined;
+  tests: boolean; // no room for tests either in mediawiki format response
+};
+
+app.get(
+  "/translate",
+  wrap(async (req, res) => {
+    const options: Options = {
+      citoid: req.query.citoid === "true" ? true : false,
+      debug: req.query.debug === "true" ? true : false,
+      // fixme
+      format: (req.query.format as Options["format"]) ?? "html",
+      sandbox: undefined,
+      tests: true,
+    };
+
+    // we may reject requests for mediawiki format which have debug and tests
+    // options set to true
+
+    const debugQuery = {
+      ...req.query,
+      debug: "true",
+    };
+    const nodebugQuery = {
+      ...req.query,
+      debug: "false",
+    };
+    const debugHref =
+      req.path + "?" + new URLSearchParams(debugQuery).toString();
+    const nodebugHref =
+      req.path + "?" + new URLSearchParams(nodebugQuery).toString();
+
+    await handler(
+      req,
+      res,
+      // fixme
+      `${req.query.url}`,
+      debugHref,
+      nodebugHref,
+      options
+    );
+  })
+);
+app.get(
+  "/*",
+  wrap(async (req, res) => {
+    const match = req.url.match(
+      /^(?<debug>\/debug)?(?<sandbox>\/sandbox\/(?<user>[^/]+))?\/(?<url>.+)?$/
+    );
+
+    if (match === null) {
+      res.redirect("/");
+      return;
+    }
+
+    const debug =
+      match.groups !== undefined && match.groups.debug !== undefined;
+
+    const { user } = match.groups ?? {};
+
+    const { url } = match.groups ?? {};
+
+    const debugHref = debug ? req.url : "/debug" + req.url;
+    const nodebugHref = debug ? req.url.replace(/^\/debug/, "") : req.url;
+
+    await handler(req, res, url, debugHref, nodebugHref, {
+      citoid: false,
+      debug,
+      format: "html",
+      sandbox: user,
+      tests: true,
+    });
+  })
+);
+
 // TODO: won't be needed anymore with Express v5
 // A wrapper function.
 // It takes fn as parameter, with fn an async version of a RequestHandler:
@@ -76,25 +156,24 @@ function wrap(
 
 async function handler(
   req: Parameters<RequestHandler>[0],
-  res: Parameters<RequestHandler>[1]
+  res: Parameters<RequestHandler>[1],
+  url: string | undefined,
+  debugHref: string,
+  nodebugHref: string,
+  options: Options
 ) {
-  const match = req.url.match(
-    /^(?<debug>\/debug)?(?<sandbox>\/sandbox\/(?<user>[^/]+))?\/(?<url>.+)?$/
-  );
-
-  if (match === null) {
-    res.redirect("/");
-    return;
-  }
-
-  const { debug, user } = match.groups ?? {};
-  const { url } = match.groups ?? {};
-
   if (url === undefined) {
-    // todo: provide an improved landing page
-    // maybe with a search field
-    // T302698
-    res.status(400).send(req.t("error.noTarget"));
+    res.status(400);
+    if (options.format === "html") {
+      // todo: provide an improved landing page
+      // maybe with a search field
+      // T302698
+      res.send(req.t("error.noTarget"));
+    } else {
+      res.json({
+        error: "noTarget",
+      });
+    }
     return;
   }
 
@@ -104,7 +183,14 @@ async function handler(
   try {
     target = new Webpage(url);
   } catch {
-    res.status(400).send(`${req.t("error.invalidTarget")}: ${url}`);
+    res.status(400);
+    if (options.format === "html") {
+      res.send(`${req.t("error.invalidTarget")}: ${url}`);
+    } else {
+      res.json({
+        error: "invalidTarget",
+      });
+    }
     return;
   }
 
@@ -120,7 +206,8 @@ async function handler(
     }
   }
 
-  if (user) {
+  if (options.sandbox) {
+    const user = options.sandbox;
     // todo: storage root should be given to the Domain constructor (T306553)
     domain.templates.storage.root = `User:${user}/Web2Cit/data/`;
     domain.patterns.storage.root = `User:${user}/Web2Cit/data/`;
@@ -139,7 +226,7 @@ async function handler(
   const targetOutputs: Awaited<ReturnType<Domain["translate"]>>[] = [];
 
   try {
-    if (debug) {
+    if (options.debug) {
       targetOutputs.push(
         await domain.translate(target, {
           // return non-applicable template outputs
@@ -184,94 +271,34 @@ async function handler(
     throw error;
   }
 
-  const patternMap: Map<string, PatternResult> = new Map();
-  const citations: CitationResult[] = [];
-
-  for (const targetOutput of targetOutputs) {
-    const pattern = targetOutput.translation.pattern;
-    if (pattern === undefined) {
-      // translation would have undefined pattern only if translate method was
-      // called with "forceTemplatePaths" option
-      console.warn(
-        `Skipping forced-template translated target: ${targetOutput.target.path}`
-      );
-      continue;
-    }
-    if (!patternMap.has(pattern)) {
-      const patternResult: PatternResult = {
-        pattern: pattern,
-        // todo: w2c-core should output pattern label
-        label: undefined,
-        targets: [],
-      };
-      patternMap.set(pattern, patternResult);
-    }
-
-    // todo: support multiple targets;
-    // meanwhile, assuming all targets should have the same origin
-    const origin = target.url.origin;
-    const { targetResult, citations: targetCitations } = parseTargetOutput(
-      targetOutput,
-      origin
+  if (options.format === "html") {
+    // Fixme: improve implementation
+    const html = makeHtmlResponse(
+      targetOutputs,
+      options.debug,
+      debugHref,
+      nodebugHref,
+      target.url.origin,
+      domain,
+      req.t
     );
-    if (debug) {
-      targetResult["debugJson"] = makeDebugJson(
-        targetOutput,
-        domain.patterns.currentRevid,
-        domain.templates.currentRevid
-      );
+    res.send(html);
+  } else if (options.format === "mediawiki") {
+    const citations: CitoidCitation[] = [];
+    for (const targetOutput of targetOutputs) {
+      for (const templateOutput of targetOutput.translation.outputs) {
+        const applicable = templateOutput.template.applicable;
+        const citation = templateOutput.citation;
+        if (applicable && citation) {
+          citations.push(citation);
+        }
+      }
     }
-
-    patternMap.get(pattern)!.targets.push(targetResult);
-    citations.push(...targetCitations);
+    res.json(citations);
+  } else if (options.format === "json") {
+    // we may want a web2cit json format for the monitor
   }
-
-  const patterns = Array.from(patternMap.values());
-
-  if (citations.length === 0) {
-    // fixes T305166
-    res.status(404).send(req.t("error.noTranslation"));
-    return;
-  }
-
-  const render = renderToStaticMarkup(
-    ResultsPageWrapper({
-      data: {
-        domain: domain.domain,
-        patterns,
-        citations,
-        // todo: we will have to change this when we support a base endpoint
-        // controlled with query string parameters, see T305750
-        debugHref: debug ? req.url : "/debug" + req.url,
-        nodebugHref: debug ? req.url.replace("/debug", "") : req.url,
-      },
-      context: {
-        t: req.t,
-        storage: {
-          // todo: the domain object should have a storage property (T306553)
-          // assuming here all configuration objects have the same storage root and path
-          instance: domain.templates.mediawiki.instance,
-          wiki: domain.templates.mediawiki.wiki,
-          prefix: domain.templates.storage.root,
-          path: domain.templates.storage.path,
-          filenames: {
-            templates: domain.templates.storage.filename,
-            patterns: domain.patterns.storage.filename,
-            // tests: domain.tests.storage.filename,
-            tests: "tests.json",
-          },
-        },
-        debug: Boolean(debug),
-      },
-    })
-  );
-  res.send("<!DOCTYPE html>\n" + render);
 }
-// app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
-// app.get("/debug/:url(*)", wrap(handler));
-// app.get("/sandbox/:user/:url(*)", wrap(handler));
-// app.get("/:url(*)", wrap(handler));
-app.get("/*", wrap(handler));
 
 function parseTargetOutput(
   targetOutput: TranslationOutput,
@@ -374,6 +401,98 @@ function getEmbeddableMetadata(
     });
   });
   return citationData;
+}
+
+function makeHtmlResponse(
+  targetOutputs: TranslationOutput[],
+  debug: boolean,
+  debugHref: string,
+  nodebugHref: string,
+  origin: string, // can't I get it from the domain?
+  domain: Domain,
+  t: TFunction
+): string {
+  const patternMap: Map<string, PatternResult> = new Map();
+  const citations: CitationResult[] = [];
+
+  for (const targetOutput of targetOutputs) {
+    const pattern = targetOutput.translation.pattern;
+    if (pattern === undefined) {
+      // translation would have undefined pattern only if translate method was
+      // called with "forceTemplatePaths" option
+      console.warn(
+        `Skipping forced-template translated target: ${targetOutput.target.path}`
+      );
+      continue;
+    }
+    if (!patternMap.has(pattern)) {
+      const patternResult: PatternResult = {
+        pattern: pattern,
+        // todo: w2c-core should output pattern label
+        label: undefined,
+        targets: [],
+      };
+      patternMap.set(pattern, patternResult);
+    }
+
+    // todo: support multiple targets;
+    // meanwhile, assuming all targets should have the same origin
+    const { targetResult, citations: targetCitations } = parseTargetOutput(
+      targetOutput,
+      origin
+    );
+    if (debug) {
+      targetResult["debugJson"] = makeDebugJson(
+        targetOutput,
+        domain.patterns.currentRevid,
+        domain.templates.currentRevid
+      );
+    }
+
+    patternMap.get(pattern)!.targets.push(targetResult);
+    citations.push(...targetCitations);
+  }
+
+  const patterns = Array.from(patternMap.values());
+
+  // if (citations.length === 0) {
+  //   // fixes T305166
+  //   res.status(404).send(req.t("error.noTranslation"));
+  //   return;
+  // }
+
+  const render = renderToStaticMarkup(
+    ResultsPageWrapper({
+      data: {
+        domain: domain.domain,
+        patterns,
+        citations,
+        // todo: we will have to change this when we support a base endpoint
+        // controlled with query string parameters, see T305750
+        debugHref,
+        nodebugHref,
+      },
+      context: {
+        t,
+        storage: {
+          // todo: the domain object should have a storage property (T306553)
+          // assuming here all configuration objects have the same storage root and path
+          instance: domain.templates.mediawiki.instance,
+          wiki: domain.templates.mediawiki.wiki,
+          prefix: domain.templates.storage.root,
+          path: domain.templates.storage.path,
+          filenames: {
+            templates: domain.templates.storage.filename,
+            patterns: domain.patterns.storage.filename,
+            // tests: domain.tests.storage.filename,
+            tests: "tests.json",
+          },
+        },
+        debug: Boolean(debug),
+      },
+    })
+  );
+  return "<!DOCTYPE html>\n" + render;
 }
 
 app.listen(port, () => {
