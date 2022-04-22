@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Basic JSON Editor Example</title>
+    <!-- Can I use a Wikimedia CDN for privacy? -->
+    <!-- How can I use the npm library instead? -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css">
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
+  </head>
+  <body>
+    <h1>Basic JSON Editor Example</h1>
+
+    <div id='editor_holder'></div>
+    <button id='submit'>Submit (console.log)</button>
+
+    <script>
+      // Initialize the editor with a JSON schema
+      var editor = new JSONEditor(document.getElementById('editor_holder'), {
+        ajax: true,
+        disable_properties: true,
+        no_additional_properties: true,
+        disable_edit_json: true,
+        show_opt_in: true,
+        disable_array_delete_all_rows: true,
+        disable_array_delete_last_row: true,
+        // theme: "bootstrap4",
+        theme: "spectre",
+        // iconlib: "fontawesome5",
+        iconlib: "spectre",
+        startval: [
+          {
+            "path": "",
+            "fields": [
+              {
+                "fieldname": "itemType",
+                "required": true,
+                "procedures": [
+                  {
+                    "selections": [
+                      {
+                        "type": "citoid",
+                        "config": "itemType"
+                      }
+                    ],
+                    "transformations": []
+                  }
+                ]
+              },
+              {
+                "fieldname": "title",
+                "required": true,
+                "procedures": [
+                  {
+                    "selections": [
+                      {
+                        "type": "citoid",
+                        "config": "title" 
+                      }
+                    ],
+                    "transformations": []
+                  }
+                ]
+              },
+              {
+                "fieldname": "authorFirst",
+                "required": false,
+                "procedures": [
+                  {
+                    "selections": [
+                      {
+                        "type": "citoid",
+                        "config": "authorFirst"
+                      }
+                    ],
+                    "transformations": []
+                  }
+                ]
+              },
+              {
+                "fieldname": "authorLast",
+                "required": false,
+                "procedures": [
+                  {
+                    "selections": [
+                      {
+                        "type": "citoid",
+                        "config": "authorLast"
+                      }
+                    ],
+                    "transformations": []
+                  }
+                ]
+              },
+              {
+                "fieldname": "date",
+                "required": false,
+                "procedures": [
+                  {
+                    "selections": [
+                      {
+                        "type": "citoid",
+                        "config": "date"
+                      }
+                    ],
+                    "transformations": [
+                      {
+                        "type": "date",
+                        "config": "en",
+                        "itemwise": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "fieldname": "publishedIn",
+                "required": false,
+                "procedures": [
+                  {
+                    "selections": [
+                      {
+                        "type": "citoid",
+                        "config": "publicationTitle"
+                      },
+                      {
+                        "type": "citoid",
+                        "config": "code"
+                      },
+                      {
+                        "type": "citoid",
+                        "config": "reporter"
+                      }
+                    ],
+                    "transformations": [
+                      {
+                        "type": "range",
+                        "config": "0",
+                        "itemwise": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "fieldname": "publishedBy",
+                "required": false,
+                "procedures": [
+                  {
+                    "selections": [
+                      {
+                        "type": "citoid",
+                        "config": "publisher"
+                      }
+                    ],
+                    "transformations": []
+                  }
+                ]
+              },
+              {
+                "fieldname": "language",
+                "required": false,
+                "procedures": [
+                  {
+                    "selections": [
+                      {
+                        "type": "citoid",
+                        "config": "language"
+                      }
+                    ],
+                    "transformations": []
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        schema: {
+          "$ref": "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/templates.schema.json"
+        }
+      });
+
+      // Hook up the submit button to log to the console
+      document.getElementById('submit').addEventListener('click',function() {
+        // Get the value from the editor
+        console.log(editor.getValue());
+      });
+    </script>
+  </body>
+</html>
