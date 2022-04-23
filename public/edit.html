@@ -2,192 +2,121 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Basic JSON Editor Example</title>
-    <!-- Can I use a Wikimedia CDN for privacy? -->
-    <!-- How can I use the npm library instead? -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css">
-    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
+    <title>Web2Cit JSON editor</title>
+    <!-- spectre theme and iconlib -->
+    <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/spectre.css/0.5.9/spectre.min.css" integrity="sha512-9RIcp1f4CE6dEuYX9085tXaEbYd1ap04d2Av1ub/dwuT33WbfbHStDdQ+shKrp5wzZzleh5DOg+7ABSnaQP/nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/spectre.css/0.5.9/spectre-icons.min.css" integrity="sha512-p/19UB+ls7zsYqyFt0S+qh0P05ThDxzQSwtY4Jo01M4OG1ZkiEMHE942OZ4wh86sT5BIrFNhY3aLsQ5pTqVIzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- bootstrap theme and fontawesome iconlib -->
+    <!-- <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" integrity="sha512-T584yQ/tdRR5QwOpfvDfVQUidzfgc2339Lc8uBDtcp/wYu80d7jwBgAxbyMh0a9YM9F8N3tdErpFI8iaGx6x5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+    <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/json-editor/2.7.0/jsoneditor.min.js" integrity="sha512-wLx+JF7SrO+gyrvdcNEuDW6DwfWkXdlbeuF0pLbzXD+ak7P3bvGVkVbmFVX1WzH9bkdilkwuE0wnIyAyI2J1Lg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   </head>
   <body>
-    <h1>Basic JSON Editor Example</h1>
-
-    <div id='editor_holder'></div>
-    <button id='submit'>Submit (console.log)</button>
-
+    <h1>
+      Editing
+      <a></a>
+    </h1>
+    <p id="warning"></p>
+    <div id='editor-container'>
+      Loading content...
+    </div>
+    <form id="form" target="_blank" method="post" enctype="application/x-www-form-urlencoded">
+      <input name="wpDiff" hidden value="Show changes">
+      <textarea id="wpTextbox1" name="wpTextbox1" hidden></textarea>
+      <input name="wpUltimateParam" hidden value=1>      
+      Save to: <input id="title" name="title">
+      <input id="submit" form="form" value="Revise changes and save" btn btn-primary" width="100" type="submit">
+    </form>
     <script>
-      // Initialize the editor with a JSON schema
-      var editor = new JSONEditor(document.getElementById('editor_holder'), {
-        ajax: true,
-        disable_properties: true,
-        no_additional_properties: true,
-        disable_edit_json: true,
-        show_opt_in: true,
-        disable_array_delete_all_rows: true,
-        disable_array_delete_last_row: true,
-        // theme: "bootstrap4",
-        theme: "spectre",
-        // iconlib: "fontawesome5",
-        iconlib: "spectre",
-        startval: [
-          {
-            "path": "",
-            "fields": [
-              {
-                "fieldname": "itemType",
-                "required": true,
-                "procedures": [
-                  {
-                    "selections": [
-                      {
-                        "type": "citoid",
-                        "config": "itemType"
-                      }
-                    ],
-                    "transformations": []
-                  }
-                ]
-              },
-              {
-                "fieldname": "title",
-                "required": true,
-                "procedures": [
-                  {
-                    "selections": [
-                      {
-                        "type": "citoid",
-                        "config": "title" 
-                      }
-                    ],
-                    "transformations": []
-                  }
-                ]
-              },
-              {
-                "fieldname": "authorFirst",
-                "required": false,
-                "procedures": [
-                  {
-                    "selections": [
-                      {
-                        "type": "citoid",
-                        "config": "authorFirst"
-                      }
-                    ],
-                    "transformations": []
-                  }
-                ]
-              },
-              {
-                "fieldname": "authorLast",
-                "required": false,
-                "procedures": [
-                  {
-                    "selections": [
-                      {
-                        "type": "citoid",
-                        "config": "authorLast"
-                      }
-                    ],
-                    "transformations": []
-                  }
-                ]
-              },
-              {
-                "fieldname": "date",
-                "required": false,
-                "procedures": [
-                  {
-                    "selections": [
-                      {
-                        "type": "citoid",
-                        "config": "date"
-                      }
-                    ],
-                    "transformations": [
-                      {
-                        "type": "date",
-                        "config": "en",
-                        "itemwise": false
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "fieldname": "publishedIn",
-                "required": false,
-                "procedures": [
-                  {
-                    "selections": [
-                      {
-                        "type": "citoid",
-                        "config": "publicationTitle"
-                      },
-                      {
-                        "type": "citoid",
-                        "config": "code"
-                      },
-                      {
-                        "type": "citoid",
-                        "config": "reporter"
-                      }
-                    ],
-                    "transformations": [
-                      {
-                        "type": "range",
-                        "config": "0",
-                        "itemwise": false
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "fieldname": "publishedBy",
-                "required": false,
-                "procedures": [
-                  {
-                    "selections": [
-                      {
-                        "type": "citoid",
-                        "config": "publisher"
-                      }
-                    ],
-                    "transformations": []
-                  }
-                ]
-              },
-              {
-                "fieldname": "language",
-                "required": false,
-                "procedures": [
-                  {
-                    "selections": [
-                      {
-                        "type": "citoid",
-                        "config": "language"
-                      }
-                    ],
-                    "transformations": []
-                  }
-                ]
-              }
-            ]
-          }
-        ],
-        schema: {
-          "$ref": "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/templates.schema.json"
+      // move this script out to somewhere we can build with tsc and serve statically
+      async function getStartval(instance, title) {
+        const apiParams = {
+          action: "query",
+          format: "json",
+          prop: "revisions",
+          titles: title,
+          rvprop: "content",
+          origin: "*",  // CORS
+          rvslots: "main",
+          formatversion: "2"
         }
-      });
-
-      // Hook up the submit button to log to the console
-      document.getElementById('submit').addEventListener('click',function() {
-        // Get the value from the editor
-        console.log(editor.getValue());
-      });
+        const request = new Request(
+          instance + "/w/api.php?" + new URLSearchParams(apiParams).toString()
+        );
+        const response = await fetch(request);
+        const jsonResponse = await response.json();
+        const page = jsonResponse.query.pages[0];
+        if (page.missing) {
+          throw new Error(`${title} does not exist`);
+          return;
+        }
+        const content = page.revisions[0].slots.main.content;
+        let jsonContent;
+        try {
+          jsonContent = JSON.parse(content);
+        } catch {
+          throw new Error(`${title} is not a valid JSON file`);
+          return;
+        }
+        return jsonContent;
+      }
+      async function init(warningElement, editorContainer) {
+        let startval;
+        try {
+          startval = await getStartval(instance, title);
+        } catch (error) {
+          // pass element as parameter
+          warningElement.textContent = (
+            `Starting with empty form: ${error}`
+          )
+        }
+        editorContainer.textContent = "";
+        try {
+          // it's not catching failures
+          const editor = new JSONEditor(editorContainer, {
+            ajax: true,
+            disable_properties: true,
+            no_additional_properties: true,
+            disable_edit_json: true,
+            show_opt_in: true,
+            disable_array_delete_all_rows: true,
+            disable_array_delete_last_row: true,
+            // theme: "bootstrap4",
+            theme: "spectre",
+            // iconlib: "fontawesome5",
+            iconlib: "spectre",
+            startval: startval,
+            schema: schema && {
+              "$ref": schema
+            }
+          });
+          editor.on('change', function () {
+            document.querySelector('#wpTextbox1').textContent = JSON.stringify(
+              editor.getValue(),
+              null,
+              2
+            );
+          });
+          document.querySelector('#submit').disabled = false;
+        } catch (error) {
+          editorContainer.textContent = (
+            `Could not generate JSON editor: ${error}`
+          )
+        }
+      }
+      const params = new URLSearchParams(window.location.search);
+      const instance = params.get("instance") ?? "https://meta.wikimedia.org";
+      const title = params.get("title");
+      const schema = params.get("schema");
+      document.querySelector("#title").value = title;
+      const href = `${instance}/w/index.php?title=${title}`;
+      document.querySelector("a").href = href;
+      document.querySelector("a").target = "_blank";
+      document.querySelector("a").textContent = title;
+      document.querySelector("form").action = instance + "?action=submit";
+      const warningElement = document.querySelector("#warning");
+      const editorContainer = document.getElementById('editor-container');
+      init(warningElement, editorContainer);
     </script>
   </body>
 </html>
