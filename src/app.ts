@@ -14,6 +14,9 @@ import {
 import { TranslationOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
 
+const SCHEMAS_PATH =
+  "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/";
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -260,6 +263,11 @@ async function handler(
             // tests: domain.tests.storage.filename,
             tests: "tests.json",
           },
+        },
+        schemas: {
+          patterns: SCHEMAS_PATH + "patterns.schema.json",
+          templates: SCHEMAS_PATH + "templates.schema.json",
+          tests: SCHEMAS_PATH + "tests.schema.json",
         },
         debug: Boolean(debug),
       },

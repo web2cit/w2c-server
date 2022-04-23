@@ -99,3 +99,9 @@ export type DebugProcedure = JSON & {
     output: string[];
   };
 };
+
+export type EditorParams = {
+  instance: string;
+  title: string;
+  schema: string;
+};

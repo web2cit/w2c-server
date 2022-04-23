@@ -17,6 +17,11 @@ export type ResultsPageContextValue = {
       tests: string;
     };
   };
+  schemas: {
+    templates: string;
+    patterns: string;
+    tests: string;
+  };
 };
 
 const defaultValue: ResultsPageContextValue = {
@@ -32,6 +37,11 @@ const defaultValue: ResultsPageContextValue = {
       patterns: "",
       tests: "",
     },
+  },
+  schemas: {
+    templates: "",
+    patterns: "",
+    tests: "",
   },
 };
 

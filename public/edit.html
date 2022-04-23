@@ -114,6 +114,7 @@
       document.querySelector("a").target = "_blank";
       document.querySelector("a").textContent = title;
       document.querySelector("form").action = instance + "?action=submit";
+      // document.querySelector("form").action = instance + "?action=submit&model=json&format=application/json";
       const warningElement = document.querySelector("#warning");
       const editorContainer = document.getElementById('editor-container');
       init(warningElement, editorContainer);
