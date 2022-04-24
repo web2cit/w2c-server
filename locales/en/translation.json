@@ -1,7 +1,12 @@
 {
   "title": "Translation summary",
   "header": "Translation summary for domain:",
-  "config": "Using configuration files in:",
+  "config_main": "Using main configuration files in:",
+  "config_sandbox": "Using sandbox (User:{{user}}) configuration files in:",
+  "switch.switch": "Switch",
+  "switch.main": "Switch to main configuration",
+  "switch.sandbox": "Switch to sandbox configuration",
+  "switch.username": "Username",
   "catchall": "catch-all",
   "pattern_labelled": "Translation subgroup for \"{{label}}\" URL path pattern:",
   "pattern_unlabelled": "Translation subgroup for URL path pattern:",

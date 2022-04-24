@@ -8,7 +8,7 @@ interface ResultsHeaderProps {
 }
 
 export default function (props: ResultsHeaderProps) {
-  const { t, storage } = useContext(ResultsPageContext);
+  const { t, storage, sandbox } = useContext(ResultsPageContext);
   return (
     <header>
       <H level={props.headingLevel}>
@@ -18,7 +18,10 @@ export default function (props: ResultsHeaderProps) {
         <i>{props.domain}</i>
       </H>
       <p>
-        {t("config") + " "}
+        {t("config", {
+          user: sandbox,
+          context: sandbox ? "sandbox" : "main",
+        }) + " "}
         <a
           href={
             storage.instance +
@@ -31,6 +34,26 @@ export default function (props: ResultsHeaderProps) {
         >
           {storage.instance + storage.wiki + storage.prefix}
         </a>
+        <div id="switch">
+          <p>
+            {t("switch." + (sandbox ? "main" : "sandbox")) + ": "}
+            {!sandbox && (
+              <>
+                <input id="user" placeholder={t("switch.username")}></input>{" "}
+              </>
+            )}
+            <a
+              href={
+                // fix: very dirty
+                sandbox
+                  ? `javascript:window.location.pathname = window.location.pathname.replace(/sandbox\\/.*?\\//, "")`
+                  : `javascript:var user = document.querySelector("input#user").value; if(user) window.location.pathname = window.location.pathname.replace(/^(\\/debug)?/, "$1/sandbox/" + user)`
+              }
+            >
+              {t("switch.switch")}
+            </a>
+          </p>
+        </div>
       </p>
     </header>
   );

@@ -1,7 +1,12 @@
 {
   "title": "Resumen de traducción",
   "header": "Resumen de traducción para el dominio:",
-  "config": "Usando archivos de configuración en:",
+  "config_main": "Usando archivos de configuración principales en:",
+  "config_sandbox": "Usando archivos de configuración de prueba (Usuario:{{user}}) en:",
+  "switch.switch": "Cambiar",
+  "switch.main": "Cambiar a la configuración principal",
+  "switch.sandbox": "Cambiar a la configuración de prueba",
+  "switch.username": "Nombre de usuario",
   "catchall": "general",
   "pattern_labelled": "Subgrupo de traducción por patrón de URL \"{{label}}\":",
   "pattern_unlabelled": "Subgrupo de traducción por patrón de URL:",

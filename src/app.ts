@@ -273,6 +273,7 @@ async function handler(
           templates: SCHEMAS_PATH + "templates.schema.json",
           tests: SCHEMAS_PATH + "tests.schema.json",
         },
+        sandbox: user ?? "",
         debug: Boolean(debug),
       },
     })
