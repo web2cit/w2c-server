@@ -49,7 +49,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static("public"));
+app.use(
+  express.static("public", {
+    index: ["home.html"],
+  })
+);
 
 // TODO: won't be needed anymore with Express v5
 // A wrapper function.
@@ -275,6 +279,7 @@ async function handler(
   );
   res.send("<!DOCTYPE html>\n" + render);
 }
+
 // app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
 // app.get("/debug/:url(*)", wrap(handler));
 // app.get("/sandbox/:user/:url(*)", wrap(handler));
