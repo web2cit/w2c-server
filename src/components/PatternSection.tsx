@@ -22,7 +22,7 @@ export default function (props: PatternSectionProps) {
   return (
     <section className="pattern">
       <H level={headingLevel}>
-        {t("pattern", { pattern, label, context: patternType }) + " "}(
+        {t("pattern", { label, context: patternType }) + " " + pattern + " "}(
         <a
           href={"/edit.html?" + new URLSearchParams(editorParams).toString()}
           target="_blank"
