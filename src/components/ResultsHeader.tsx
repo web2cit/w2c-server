@@ -46,7 +46,7 @@ export default function (props: ResultsHeaderProps) {
               href={
                 // fix: very dirty
                 sandbox
-                  ? `javascript:window.location.pathname = window.location.pathname.replace(/sandbox\\/.*?\\//, "")`
+                  ? `javascript:window.location.pathname = window.location.pathname.replace(/^(\\/(debug\\/)?)sandbox\\/.*?\\//, "$1")`
                   : `javascript:var user = document.querySelector("input#user").value; if(user) window.location.pathname = window.location.pathname.replace(/^(\\/debug)?/, "$1/sandbox/" + user)`
               }
             >
