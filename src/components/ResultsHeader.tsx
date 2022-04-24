@@ -12,6 +12,8 @@ export default function (props: ResultsHeaderProps) {
   return (
     <header>
       <H level={props.headingLevel}>
+        <a href="/">Web2Cit</a>
+        {" | "}
         {t("header") + " "}
         <i>{props.domain}</i>
       </H>

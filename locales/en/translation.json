@@ -1,6 +1,6 @@
 {
-  "title": "Web2Cit",
-  "header": "Web2Cit translation summary for domain:",
+  "title": "Translation summary",
+  "header": "Translation summary for domain:",
   "config": "Using configuration files in:",
   "catchall": "catch-all",
   "pattern_labelled": "Translation subgroup for \"{{label}}\" URL path pattern:",

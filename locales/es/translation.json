@@ -1,6 +1,6 @@
 {
-  "title": "Web2Cit",
-  "header": "Resumen de traducción Web2Cit para el dominio:",
+  "title": "Resumen de traducción",
+  "header": "Resumen de traducción para el dominio:",
   "config": "Usando archivos de configuración en:",
   "catchall": "general",
   "pattern_labelled": "Subgrupo de traducción por patrón de URL \"{{label}}\":",
