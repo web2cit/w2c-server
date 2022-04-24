@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Web2Cit</title>
+    <style>
+        html, body {
+            height: 100%;
+        }
+        .main {
+            height: 100%;
+            width: 100%;
+            display: table;
+        }
+        .wrapper {
+            display: table-cell;
+            height: 100%;
+            vertical-align: middle;
+            text-align: center;
+        }
+        form > * {
+            margin-bottom: .5em;
+            margin-top: .5em;
+        }
+        .target * {
+            font-size: x-large;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+        <div class="wrapper">
+            <h1>Web2Cit</h1>
+            <h2>Collaborative citation metadata extraction from web sources</h2>
+            <form>
+                <div class="target">
+                    <input id="url" name="url" placeholder="target URL">
+                    <input id="submit" type="submit" value="Extract!" disabled><br>
+                </div>
+                Use
+                <select id="config" name="config">
+                    <option value="main">Main</option>
+                    <option value="sandbox">Sandbox</option>
+                </select>
+                <input id="user" name="user" placeholder="username" disabled>
+                configuration
+                <br>
+                <input type="checkbox" name="debug">Show debugging information</input>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.querySelector("form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const form = new FormData(e.target);
+            const url = form.get("url");
+            const config = form.get("config");
+            const user = config === "sandbox" && form.get("user");
+            const debug = form.get("debug");
+            let newHref = window.location.origin;
+            if (debug) newHref += "/debug";
+            if (user) newHref += `/sandbox/${user}`;
+            window.location.href = newHref + "/" + url;
+        });
+        function inputEventHandler(e) {
+            const submit = document.getElementById("submit");
+            if (e.target.value === "") {
+                submit.disabled = true;
+            } else {
+                submit.disabled = false;
+            }
+        };
+        document.getElementById("url").addEventListener("change", inputEventHandler);
+        document.getElementById("url").addEventListener("input", inputEventHandler);
+        document.getElementById("config").addEventListener("change", (e) => {
+            const user = document.getElementById("user");
+            if (e.target.value === "main") {
+                user.disabled = true;
+            } else {
+                user.disabled = false;
+            }
+        });
+    </script>
+  </body>
+</html>
