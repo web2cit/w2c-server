@@ -13,6 +13,7 @@ import {
 } from "./types";
 import { TranslationOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
+import HomePage from "./components/HomePage";
 
 const SCHEMAS_PATH =
   "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/";
@@ -49,11 +50,18 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
-  express.static("public", {
-    index: ["home.html"],
-  })
-);
+app.use(express.static("public"));
+app.use(express.static("dist/public"));
+
+// app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
+// app.get("/debug/:url(*)", wrap(handler));
+// app.get("/sandbox/:user/:url(*)", wrap(handler));
+// app.get("/:url(*)", wrap(handler));
+app.get("/", (req, res) => {
+  const render = renderToStaticMarkup(HomePage({ t: req.t }));
+  res.send("<!DOCTYPE html>\n" + render);
+});
+app.get("/*", wrap(handler));
 
 // TODO: won't be needed anymore with Express v5
 // A wrapper function.
@@ -280,12 +288,6 @@ async function handler(
   );
   res.send("<!DOCTYPE html>\n" + render);
 }
-
-// app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
-// app.get("/debug/:url(*)", wrap(handler));
-// app.get("/sandbox/:user/:url(*)", wrap(handler));
-// app.get("/:url(*)", wrap(handler));
-app.get("/*", wrap(handler));
 
 function parseTargetOutput(
   targetOutput: TranslationOutput,

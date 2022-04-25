@@ -1,4 +1,13 @@
 {
+  "web2cit": "Web2Cit",
+  "home.subheading": "Collaborative automatic metadata extraction",
+  "home.target": "Target URL",
+  "home.extract": "Extract",
+  "home.config": "Use {{choice}} configuration",
+  "home.config.main": "Main",
+  "home.config.sandbox": "Sandbox",
+  "home.config.user": "Username",
+  "home.debug": "Show debugging information",
   "title": "Translation summary",
   "header": "Translation summary for domain:",
   "config_main": "Using main configuration files in:",
