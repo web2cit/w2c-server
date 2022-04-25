@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>JSON Editor - Web2Cit</title>
+    <link rel="stylesheet" href="edit.css" />
     <!-- spectre theme and iconlib -->
     <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/spectre.css/0.5.9/spectre.min.css" integrity="sha512-9RIcp1f4CE6dEuYX9085tXaEbYd1ap04d2Av1ub/dwuT33WbfbHStDdQ+shKrp5wzZzleh5DOg+7ABSnaQP/nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/spectre.css/0.5.9/spectre-icons.min.css" integrity="sha512-p/19UB+ls7zsYqyFt0S+qh0P05ThDxzQSwtY4Jo01M4OG1ZkiEMHE942OZ4wh86sT5BIrFNhY3aLsQ5pTqVIzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -16,19 +17,22 @@
       Editing
       <a></a>
     </h1>
-    <p id="warning"></p>
-    <div id='editor-container'>
-      Loading content...
+    <div id="wrapper">
+      <p id="warning-box"></p>
+      <div id='editor-container'></div>
     </div>
+    <h2>Save</h2>
     <form id="form" target="_blank" method="post" enctype="application/x-www-form-urlencoded">
       <input name="wpDiff" hidden value="Show changes">
       <textarea id="wpTextbox1" name="wpTextbox1" hidden></textarea>
       <input name="wpUltimateParam" hidden value=1>      
-      Save to: <input id="title" name="title">
-      <input id="submit" form="form" value="Revise changes and save" btn btn-primary" width="100" type="submit">
+      Save to: <input id="title" name="title" size="50">
+      <input id="submit" form="form" value="Review changes and save" type="submit" >
     </form>
     <script>
-      // move this script out to somewhere we can build with tsc and serve statically
+      let initialValue;
+      let changed = false;
+      // todo: move script out as ts file
       async function getStartval(instance, title) {
         const apiParams = {
           action: "query",
@@ -60,19 +64,20 @@
         }
         return jsonContent;
       }
-      async function init(warningElement, editorContainer) {
+      async function init(warningBox, editorContainer) {
+        editorContainer.textContent = "Loading " + title + "...";
         let startval;
         try {
           startval = await getStartval(instance, title);
-        } catch (error) {
-          // pass element as parameter
-          warningElement.textContent = (
-            `Starting with empty form: ${error}`
-          )
+        } catch (error) {          
+          warningBox.innerHTML = (
+            "<b>Starting with an empty form</b><br/>" +
+            error
+          );
         }
         editorContainer.textContent = "";
         try {
-          // it's not catching failures
+          // fixme: errors are not being caught
           const editor = new JSONEditor(editorContainer, {
             ajax: true,
             disable_properties: true,
@@ -81,6 +86,7 @@
             show_opt_in: true,
             disable_array_delete_all_rows: true,
             disable_array_delete_last_row: true,
+            object_layout: "grid",
             // theme: "bootstrap4",
             theme: "spectre",
             // iconlib: "fontawesome5",
@@ -91,18 +97,35 @@
             }
           });
           editor.on('change', function () {
-            document.querySelector('#wpTextbox1').textContent = JSON.stringify(
+            const textbox = document.querySelector('#wpTextbox1');
+            const newValue = JSON.stringify(
               editor.getValue(),
               null,
               2
             );
+            textbox.textContent = newValue;
+            if (initialValue) {
+              if (initialValue === newValue) {
+                changed = false;
+              } else {
+                changed = true;
+              }
+            } else {
+              initialValue = newValue;
+            }            
           });
           document.querySelector('#submit').disabled = false;
         } catch (error) {
           editorContainer.textContent = (
             `Could not generate JSON editor: ${error}`
-          )
+          );
+          editorContainer.className = "error";
         }
+        window.addEventListener("beforeunload", (e) => {
+          if (changed) {
+            e.preventDefault();
+          }
+        });
       }
       const params = new URLSearchParams(window.location.search);
       const instance = params.get("instance") ?? "https://meta.wikimedia.org";
@@ -115,9 +138,9 @@
       document.querySelector("a").textContent = title;
       document.querySelector("form").action = instance + "?action=submit";
       // document.querySelector("form").action = instance + "?action=submit&model=json&format=application/json";
-      const warningElement = document.querySelector("#warning");
+      const warningBox = document.getElementById("warning-box");
       const editorContainer = document.getElementById('editor-container');
-      init(warningElement, editorContainer);
+      init(warningBox, editorContainer);
     </script>
   </body>
 </html>
