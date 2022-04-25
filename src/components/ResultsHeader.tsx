@@ -42,16 +42,13 @@ export default function (props: ResultsHeaderProps) {
                 <input id="user" placeholder={t("switch.username")}></input>{" "}
               </>
             )}
-            <a
-              href={
-                // fix: very dirty
-                sandbox
-                  ? `javascript:window.location.pathname = window.location.pathname.replace(/^(\\/(debug\\/)?)sandbox\\/.*?\\//, "$1")`
-                  : `javascript:var user = document.querySelector("input#user").value; if(user) window.location.pathname = window.location.pathname.replace(/^(\\/debug)?/, "$1/sandbox/" + user)`
-              }
-            >
+            <a id="switch" className={sandbox ? "main" : "sandbox"} href="#">
+              {/* href="javascript:void(0)"> */}
               {t("switch.switch")}
             </a>
+            <script
+              dangerouslySetInnerHTML={{ __html: "setSwitch()" }}
+            ></script>
           </p>
         </div>
       </p>

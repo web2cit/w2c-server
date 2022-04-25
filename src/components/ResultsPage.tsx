@@ -24,6 +24,7 @@ export default function (props: ResultsPageProps) {
     >
       <head>
         <title>{t("title")} - Web2Cit</title>
+        <script src="/results.js"></script>
         <link rel="stylesheet" href="/results.css" />
         <HeadMetadata citations={props.citations} />
       </head>

@@ -24,3 +24,7 @@ table.json th span {
   position: sticky;
   top: 0.5em;
 }
+a#switch.disabled {
+  pointer-events: none;
+  color: gray;
+}
