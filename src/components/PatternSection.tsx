@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import ResultsPageContext from "./ResultsPageContext";
 import TargetSection from "./TargetSection";
-import { PatternResult } from "../types";
+import { EditorParams, PatternResult } from "../types";
 import H, { HeadingLevel } from "./Heading";
 
 interface PatternSectionProps {
@@ -10,22 +10,21 @@ interface PatternSectionProps {
 }
 
 export default function (props: PatternSectionProps) {
-  const { t, storage } = useContext(ResultsPageContext);
+  const { t, storage, schemas } = useContext(ResultsPageContext);
   const { pattern, label, targets } = props.pattern;
   const patternType = label === undefined ? "unlabelled" : "labelled";
   const headingLevel = props.headingLevel ?? 1;
+  const editorParams: EditorParams = {
+    instance: storage.instance,
+    title: storage.prefix + storage.path + storage.filenames.patterns,
+    schema: schemas.patterns,
+  };
   return (
     <section className="pattern">
       <H level={headingLevel}>
-        {t("pattern", { pattern, label, context: patternType }) + " "}(
+        {t("pattern", { label, context: patternType }) + " " + pattern + " "}(
         <a
-          href={
-            storage.instance +
-            storage.wiki +
-            storage.prefix +
-            storage.path +
-            storage.filenames.patterns
-          }
+          href={"/edit.html?" + new URLSearchParams(editorParams).toString()}
           target="_blank"
         >
           {t("edit")}

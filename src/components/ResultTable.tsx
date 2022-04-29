@@ -1,18 +1,24 @@
 import React, { useContext } from "react";
 import ResultsPageContext from "./ResultsPageContext";
 import ResultRow from "./ResultRow";
-import { TranslationField } from "../types";
+import { EditorParams, TranslationField } from "../types";
 
 interface ResultTableProps {
   fields: TranslationField[];
 }
 
 export default function (props: ResultTableProps) {
-  const { t, storage } = useContext(ResultsPageContext);
-  const rootPath =
-    storage.instance + storage.wiki + storage.prefix + storage.path;
-  const templatesPath = rootPath + storage.filenames.templates;
-  const testsPath = rootPath + storage.filenames.tests;
+  const { t, storage, schemas } = useContext(ResultsPageContext);
+  const templatesEditorParams: EditorParams = {
+    instance: storage.instance,
+    title: storage.prefix + storage.path + storage.filenames.templates,
+    schema: schemas.templates,
+  };
+  const testsEditorParams: EditorParams = {
+    instance: storage.instance,
+    title: storage.prefix + storage.path + storage.filenames.tests,
+    schema: schemas.tests,
+  };
   return (
     <table className="translation-table">
       <thead>
@@ -23,7 +29,13 @@ export default function (props: ResultTableProps) {
           <th>
             {t("outputHeader")}
             <br />(
-            <a href={templatesPath} target="_blank">
+            <a
+              href={
+                "/edit.html?" +
+                new URLSearchParams(templatesEditorParams).toString()
+              }
+              target="_blank"
+            >
               {t("edit")}
             </a>
             )
@@ -32,7 +44,13 @@ export default function (props: ResultTableProps) {
           <th>
             {t("testHeader")}
             <br />(
-            <a href={testsPath} target="_blank">
+            <a
+              href={
+                "/edit.html?" +
+                new URLSearchParams(testsEditorParams).toString()
+              }
+              target="_blank"
+            >
               {t("edit")}
             </a>
             )

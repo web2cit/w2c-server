@@ -1,0 +1,21 @@
+html, body {
+    height: 100%;
+}
+.main {
+    height: 100%;
+    width: 100%;
+    display: table;
+}
+.wrapper {
+    display: table-cell;
+    height: 100%;
+    vertical-align: middle;
+    text-align: center;
+}
+form > * {
+    margin-bottom: .5em;
+    margin-top: .5em;
+}
+.target * {
+    font-size: x-large;
+}

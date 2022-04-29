@@ -23,7 +23,8 @@ export default function (props: ResultsPageProps) {
       prefix="z:http://www.zotero.org/namespaces/export#"
     >
       <head>
-        <title>{t("title")}</title>
+        <title>{t("title")} - Web2Cit</title>
+        <script src="/results.js"></script>
         <link rel="stylesheet" href="/results.css" />
         <HeadMetadata citations={props.citations} />
       </head>

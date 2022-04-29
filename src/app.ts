@@ -14,6 +14,10 @@ import {
 import { TranslationOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
 import { CitoidCitation } from "web2cit/dist/citoid";
+import HomePage from "./components/HomePage";
+
+const SCHEMAS_PATH =
+  "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -48,6 +52,16 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static("public"));
+app.use(express.static("dist/public"));
+
+// app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
+// app.get("/debug/:url(*)", wrap(handler));
+// app.get("/sandbox/:user/:url(*)", wrap(handler));
+// app.get("/:url(*)", wrap(handler));
+app.get("/", (req, res) => {
+  const render = renderToStaticMarkup(HomePage({ t: req.t }));
+  res.send("<!DOCTYPE html>\n" + render);
+});
 
 type Options = {
   citoid: boolean;
@@ -275,6 +289,7 @@ async function handler(
     // Fixme: improve implementation
     const html = makeHtmlResponse(
       targetOutputs,
+      options.sandbox,
       options.debug,
       debugHref,
       nodebugHref,
@@ -405,6 +420,7 @@ function getEmbeddableMetadata(
 
 function makeHtmlResponse(
   targetOutputs: TranslationOutput[],
+  sandbox: string | undefined,
   debug: boolean,
   debugHref: string,
   nodebugHref: string,
@@ -473,7 +489,7 @@ function makeHtmlResponse(
         nodebugHref,
       },
       context: {
-        t,
+        t: t,
         storage: {
           // todo: the domain object should have a storage property (T306553)
           // assuming here all configuration objects have the same storage root and path
@@ -488,6 +504,12 @@ function makeHtmlResponse(
             tests: "tests.json",
           },
         },
+        schemas: {
+          patterns: SCHEMAS_PATH + "patterns.schema.json",
+          templates: SCHEMAS_PATH + "templates.schema.json",
+          tests: SCHEMAS_PATH + "tests.schema.json",
+        },
+        sandbox: sandbox ?? "",
         debug: Boolean(debug),
       },
     })

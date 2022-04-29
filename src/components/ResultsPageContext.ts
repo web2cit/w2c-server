@@ -5,6 +5,7 @@ export type TFunctionLike = (key: string, options?: TOptions) => string;
 
 export type ResultsPageContextValue = {
   t: TFunctionLike;
+  sandbox: string;
   debug: boolean;
   storage: {
     instance: string;
@@ -17,10 +18,16 @@ export type ResultsPageContextValue = {
       tests: string;
     };
   };
+  schemas: {
+    templates: string;
+    patterns: string;
+    tests: string;
+  };
 };
 
 const defaultValue: ResultsPageContextValue = {
   t: (key: string) => key,
+  sandbox: "",
   debug: false,
   storage: {
     instance: "",
@@ -32,6 +39,11 @@ const defaultValue: ResultsPageContextValue = {
       patterns: "",
       tests: "",
     },
+  },
+  schemas: {
+    templates: "",
+    patterns: "",
+    tests: "",
   },
 };
 
