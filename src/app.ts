@@ -1,7 +1,7 @@
-import express, { RequestHandler, response } from "express";
+import express, { RequestHandler } from "express";
 import { Domain, Webpage, HTTPResponseError } from "web2cit";
 import i18next, { TFunction } from "i18next";
-import i18nextMiddleware, { handle } from "i18next-http-middleware";
+import i18nextMiddleware from "i18next-http-middleware";
 import Backend from "i18next-fs-backend";
 import { renderToStaticMarkup } from "react-dom/server";
 import ResultsPageWrapper from "./components/ResultsPageWrapper";
@@ -10,6 +10,7 @@ import {
   TargetResult,
   TranslationResult,
   CitationResult,
+  isReqQuery,
 } from "./types";
 import { TranslationOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
@@ -54,10 +55,6 @@ app.use((req, res, next) => {
 app.use(express.static("public"));
 app.use(express.static("dist/public"));
 
-// app.get("/debug/sandbox/:user/:url(*)", wrap(handler));
-// app.get("/debug/:url(*)", wrap(handler));
-// app.get("/sandbox/:user/:url(*)", wrap(handler));
-// app.get("/:url(*)", wrap(handler));
 app.get("/", (req, res) => {
   const render = renderToStaticMarkup(HomePage({ t: req.t }));
   res.send("<!DOCTYPE html>\n" + render);
@@ -74,18 +71,40 @@ type Options = {
 app.get(
   "/translate",
   wrap(async (req, res) => {
+    if (!isReqQuery(req.query)) {
+      res.status(400);
+      // todo: consider providing more verbose output
+      // also consider providing json or html response depending on format param
+      res.send("Invalid query");
+      return;
+    }
+    const url = req.query.url || undefined;
     const options: Options = {
       citoid: req.query.citoid === "true" ? true : false,
       debug: req.query.debug === "true" ? true : false,
-      // fixme
-      format: (req.query.format as Options["format"]) ?? "html",
-      sandbox: undefined,
-      tests: true,
+      format: req.query.format ?? "html",
+      sandbox: req.query.sandbox || undefined,
+      tests: req.query.tests === "true" ? true : false,
     };
 
-    // we may reject requests for mediawiki format which have debug and tests
-    // options set to true
+    if (options.format === "mediawiki" && (options.debug || options.tests)) {
+      res.status(400);
+      res.json({
+        error: '"mediawiki" format does not support debug or tests modes',
+      });
+      return;
+    }
 
+    if (options.format === "html" && options.tests && !options.citoid) {
+      let path = "/";
+      if (options.debug) path += "debug/";
+      if (options.sandbox) path += `sandbox/${options.sandbox}/`;
+      path += url;
+      res.redirect(301, path);
+      return;
+    }
+
+    // fixme: remove
     const debugQuery = {
       ...req.query,
       debug: "true",
@@ -129,6 +148,7 @@ app.get(
 
     const { url } = match.groups ?? {};
 
+    // fixme: remove
     const debugHref = debug ? req.url : "/debug" + req.url;
     const nodebugHref = debug ? req.url.replace(/^\/debug/, "") : req.url;
 
@@ -172,6 +192,7 @@ async function handler(
   req: Parameters<RequestHandler>[0],
   res: Parameters<RequestHandler>[1],
   url: string | undefined,
+  // fixme: remove
   debugHref: string,
   nodebugHref: string,
   options: Options
@@ -179,9 +200,6 @@ async function handler(
   if (url === undefined) {
     res.status(400);
     if (options.format === "html") {
-      // todo: provide an improved landing page
-      // maybe with a search field
-      // T302698
       res.send(req.t("error.noTarget"));
     } else {
       res.json({
@@ -208,12 +226,18 @@ async function handler(
     return;
   }
 
-  let domain;
+  let domain: Domain;
   try {
     domain = new Domain(target.domain);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(400).send(`${req.t("error.domain")}: ${error.message}`);
+      res.status(400);
+      const message = `${req.t("error.domain")}: ${error.message}`;
+      if (options.format === "html") {
+        res.send(message);
+      } else {
+        res.json({ error: message });
+      }
       return;
     } else {
       throw error;
@@ -269,81 +293,85 @@ async function handler(
       // than from citoid api; see T304773
       if (error instanceof HTTPResponseError) {
         const response = error.response;
-        res.status(response.status).send(
-          `<h1>${req.t("error.external")}</h1>` +
-            "<p>" +
-            req.t("error.external.details", {
-              url: error.url,
-              code: response.status,
-              message: response.statusText,
-            }) +
-            "</p>"
-        );
+        res.status(response.status);
+        const message =
+          `${req.t("error.external")} | ` +
+          req.t("error.external.details", {
+            url: error.url,
+            code: response.status,
+            message: response.statusText,
+          });
+        if (options.format === "html") {
+          res.send(message);
+        } else {
+          res.json({ error: message });
+        }
         return;
       }
     }
     throw error;
   }
 
+  const results: TargetResult[] = [];
+  const citations: NonNullable<
+    TranslationOutput["translation"]["outputs"][number]["citation"]
+  >[] = [];
+  for (const targetOutput of targetOutputs) {
+    const targetResult: TargetResult = {
+      href: target.url.origin + targetOutput.target.path,
+      path: targetOutput.target.path,
+      pattern: targetOutput.translation.pattern,
+      results: [],
+    };
+    const targetCitations: typeof citations = [];
+    for (const templateOutput of targetOutput.translation.outputs) {
+      if (templateOutput.template.applicable) {
+        if (options.format !== "mediawiki") {
+          // mediawiki format includes citations only
+          // do not make translation results unnecessarily
+          const translationResult = makeTranslationResult(templateOutput);
+          targetResult.results.push(translationResult);
+        }
+        // citation should be defined for an applicable template
+        const citation = templateOutput.citation!;
+        targetCitations.push(citation);
+      }
+    }
+    if (options.debug) {
+      targetResult["debugJson"] = makeDebugJson(
+        targetOutput,
+        domain.patterns.currentRevid,
+        domain.templates.currentRevid
+      );
+    }
+    results.push(targetResult);
+    citations.push(...targetCitations);
+  }
+
   if (options.format === "html") {
-    // Fixme: improve implementation
+    if (citations.length === 0) {
+      // fixes T305166
+      res.status(404);
+      res.send(req.t("error.noTranslation"));
+      return;
+    }
     const html = makeHtmlResponse(
-      targetOutputs,
-      options.sandbox,
+      results,
+      citations,
       options.debug,
+      options.sandbox,
       debugHref,
       nodebugHref,
-      target.url.origin,
       domain,
       req.t
     );
     res.send(html);
   } else if (options.format === "mediawiki") {
-    const citations: CitoidCitation[] = [];
-    for (const targetOutput of targetOutputs) {
-      for (const templateOutput of targetOutput.translation.outputs) {
-        const applicable = templateOutput.template.applicable;
-        const citation = templateOutput.citation;
-        if (applicable && citation) {
-          citations.push(citation);
-        }
-      }
-    }
-    res.json(citations);
+    // todo: handle citoid option
+    res.json(citations as CitoidCitation[]);
   } else if (options.format === "json") {
-    // we may want a web2cit json format for the monitor
+    res.json(results);
   }
-}
-
-function parseTargetOutput(
-  targetOutput: TranslationOutput,
-  origin: string
-): {
-  targetResult: TargetResult;
-  citations: CitationResult[];
-} {
-  const targetResult: TargetResult = {
-    href: origin + targetOutput.target.path,
-    path: targetOutput.target.path,
-    results: [],
-  };
-  const citations: CitationResult[] = [];
-  for (const templateOutput of targetOutput.translation.outputs) {
-    if (templateOutput.template.applicable) {
-      // citation should be defined for an applicable template
-      const citation = templateOutput.citation!;
-      const citationResult: CitationResult = {
-        url: citation.url,
-        data: getEmbeddableMetadata(citation),
-      };
-      citations.push(citationResult);
-      targetResult.results.push(makeTranslationResult(templateOutput));
-    }
-  }
-  return {
-    targetResult,
-    citations,
-  };
 }
 
 function makeTranslationResult(
@@ -419,25 +447,24 @@ function getEmbeddableMetadata(
 }
 
 function makeHtmlResponse(
-  targetOutputs: TranslationOutput[],
-  sandbox: string | undefined,
+  targetResults: TargetResult[],
+  citations: Array<Parameters<typeof getEmbeddableMetadata>[0]>,
   debug: boolean,
+  sandbox: string | undefined,
+  // fixme: remove
   debugHref: string,
   nodebugHref: string,
-  origin: string, // can't I get it from the domain?
   domain: Domain,
   t: TFunction
 ): string {
   const patternMap: Map<string, PatternResult> = new Map();
-  const citations: CitationResult[] = [];
-
-  for (const targetOutput of targetOutputs) {
-    const pattern = targetOutput.translation.pattern;
+  for (const targetResult of targetResults) {
+    const pattern = targetResult.pattern;
     if (pattern === undefined) {
       // translation would have undefined pattern only if translate method was
       // called with "forceTemplatePaths" option
       console.warn(
-        `Skipping forced-template translated target: ${targetOutput.target.path}`
+        `Skipping forced-template translated target: ${targetResult.path}`
       );
       continue;
     }
@@ -450,46 +477,31 @@ function makeHtmlResponse(
       };
       patternMap.set(pattern, patternResult);
     }
-
-    // todo: support multiple targets;
-    // meanwhile, assuming all targets should have the same origin
-    const { targetResult, citations: targetCitations } = parseTargetOutput(
-      targetOutput,
-      origin
-    );
-    if (debug) {
-      targetResult["debugJson"] = makeDebugJson(
-        targetOutput,
-        domain.patterns.currentRevid,
-        domain.templates.currentRevid
-      );
-    }
-
     patternMap.get(pattern)!.targets.push(targetResult);
-    citations.push(...targetCitations);
   }
-
   const patterns = Array.from(patternMap.values());
 
-  // if (citations.length === 0) {
-  //   // fixes T305166
-  //   res.status(404).send(req.t("error.noTranslation"));
-  //   return;
-  // }
+  const citationResults: CitationResult[] = citations.map((citation) => {
+    const citationResult: CitationResult = {
+      url: citation.url,
+      data: getEmbeddableMetadata(citation),
+    };
+    return citationResult;
+  });
 
   const render = renderToStaticMarkup(
     ResultsPageWrapper({
       data: {
         domain: domain.domain,
         patterns,
-        citations,
+        citations: citationResults,
         // todo: we will have to change this when we support a base endpoint
         // controlled with query string parameters, see T305750
         debugHref,
         nodebugHref,
       },
       context: {
-        t: t,
+        t,
         storage: {
           // todo: the domain object should have a storage property (T306553)
           // assuming here all configuration objects have the same storage root and path
@@ -504,13 +516,13 @@ function makeHtmlResponse(
             tests: "tests.json",
           },
         },
+        debug,
+        sandbox: sandbox ?? "",
         schemas: {
           patterns: SCHEMAS_PATH + "patterns.schema.json",
           templates: SCHEMAS_PATH + "templates.schema.json",
           tests: SCHEMAS_PATH + "tests.schema.json",
         },
-        sandbox: sandbox ?? "",
-        debug: Boolean(debug),
       },
     })
   );

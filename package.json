@@ -6,7 +6,7 @@
   "scripts": {
     "start": "NODE_ENV=production node dist/app.js",
     "dev": "npm run build && node dist/app.js",
-    "build": "tsc",
+    "build": "tsc --build",
     "test": "jest",
     "prepare": "husky install"
   },

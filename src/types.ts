@@ -13,6 +13,7 @@ export type PatternResult = {
 export type TargetResult = {
   href: string;
   path: string;
+  pattern: string | undefined;
   results: TranslationResult[];
   debugJson?: DebugJson;
 };
@@ -105,3 +106,35 @@ export type EditorParams = {
   title: string;
   schema: string;
 };
+
+interface ReqQuery {
+  url: string;
+  citoid?: "true" | "false";
+  debug?: "true" | "false";
+  format?: "html" | "json" | "mediawiki";
+  sandbox?: string;
+  tests?: "true" | "false";
+}
+export function isReqQuery(query: unknown): query is ReqQuery {
+  const { citoid, debug, format, sandbox, tests, url } = query as ReqQuery;
+  if (url === undefined || typeof url !== "string") {
+    return false;
+  } else if (sandbox !== undefined && typeof sandbox !== "string") {
+    return false;
+  } else if (citoid !== undefined && citoid !== "true" && citoid !== "false") {
+    return false;
+  } else if (debug !== undefined && debug !== "true" && debug !== "false") {
+    return false;
+  } else if (tests !== undefined && tests !== "true" && tests !== "false") {
+    return false;
+  } else if (
+    format !== undefined &&
+    format !== "html" &&
+    format !== "json" &&
+    format !== "mediawiki"
+  ) {
+    return false;
+  } else {
+    return true;
+  }
+}

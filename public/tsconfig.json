@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["DOM"],
+    "outDir": "../dist/public",
+  },
+  "include": [
+    "./"
+  ]
+}
