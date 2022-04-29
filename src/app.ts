@@ -252,14 +252,18 @@ async function handler(
   }
 
   // todo: consider having an init method (T306555)
-  const templatesRevision = await domain.templates.getLatestRevision();
-  if (templatesRevision !== undefined) {
-    domain.templates.loadRevision(templatesRevision);
-  }
-  const patternsRevision = await domain.patterns.getLatestRevision();
-  if (patternsRevision !== undefined) {
-    domain.patterns.loadRevision(patternsRevision);
-  }
+  await Promise.all([
+    domain.templates.getLatestRevision().then((templatesRevision) => {
+      if (templatesRevision !== undefined) {
+        domain.templates.loadRevision(templatesRevision);
+      }
+    }),
+    domain.patterns.getLatestRevision().then((patternsRevision) => {
+      if (patternsRevision !== undefined) {
+        domain.patterns.loadRevision(patternsRevision);
+      }
+    }),
+  ]);
 
   const targetOutputs: Awaited<ReturnType<Domain["translate"]>>[] = [];
 
