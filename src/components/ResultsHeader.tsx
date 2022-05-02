@@ -8,7 +8,8 @@ interface ResultsHeaderProps {
 }
 
 export default function (props: ResultsHeaderProps) {
-  const { t, storage, sandbox } = useContext(ResultsPageContext);
+  const { t, storage, query } = useContext(ResultsPageContext);
+  const { sandbox } = query;
   return (
     <header>
       <H level={props.headingLevel}>
@@ -35,21 +36,29 @@ export default function (props: ResultsHeaderProps) {
           {storage.instance + storage.wiki + storage.prefix}
         </a>
         <div id="switch">
-          <p>
-            {t("switch." + (sandbox ? "main" : "sandbox")) + ": "}
-            {!sandbox && (
-              <>
-                <input id="user" placeholder={t("switch.username")}></input>{" "}
-              </>
-            )}
-            <a id="switch" className={sandbox ? "main" : "sandbox"} href="#">
-              {/* href="javascript:void(0)"> */}
-              {t("switch.switch")}
-            </a>
-            <script
-              dangerouslySetInnerHTML={{ __html: "setSwitch()" }}
-            ></script>
-          </p>
+          <form action="/translate">
+            <input hidden readOnly name="url" value={query.url} />
+            <input hidden readOnly name="citoid" value={query.citoid} />
+            <input hidden readOnly name="debug" value={query.debug} />
+            <input hidden readOnly name="format" value={query.format} />
+            <input hidden readOnly name="tests" value={query.tests} />
+            <label>
+              {t("switch." + (sandbox ? "main" : "sandbox")) + ": "}
+              <input
+                hidden={sandbox !== undefined}
+                id="user"
+                name="sandbox"
+                placeholder={t("switch.username")}
+              />{" "}
+              <input
+                id="switch"
+                className={sandbox ? "main" : "sandbox"}
+                type="submit"
+                value={t("switch.switch")}
+              />
+            </label>
+          </form>
+          <script dangerouslySetInnerHTML={{ __html: "init();" }} />
         </div>
       </p>
     </header>

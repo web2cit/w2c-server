@@ -11,8 +11,6 @@ export default function (props: ResultsPageWrapperProps) {
         domain={props.data.domain}
         patterns={props.data.patterns}
         citations={props.data.citations}
-        debugHref={props.data.debugHref}
-        nodebugHref={props.data.nodebugHref}
       />
     </ResultsPageContext.Provider>
   );

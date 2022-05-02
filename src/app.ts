@@ -11,6 +11,7 @@ import {
   TranslationResult,
   CitationResult,
   isReqQuery,
+  ReqQuery,
 } from "./types";
 import { TranslationOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
@@ -109,27 +110,11 @@ app.get(
       return;
     }
 
-    // fixme: remove
-    const debugQuery = {
-      ...req.query,
-      debug: "true",
-    };
-    const nodebugQuery = {
-      ...req.query,
-      debug: "false",
-    };
-    const debugHref =
-      req.path + "?" + new URLSearchParams(debugQuery).toString();
-    const nodebugHref =
-      req.path + "?" + new URLSearchParams(nodebugQuery).toString();
-
     await handler(
       req,
       res,
       // fixme
       `${req.query.url}`,
-      debugHref,
-      nodebugHref,
       options
     );
   })
@@ -153,11 +138,7 @@ app.get(
 
     const { url } = match.groups ?? {};
 
-    // fixme: remove
-    const debugHref = debug ? req.url : "/debug" + req.url;
-    const nodebugHref = debug ? req.url.replace(/^\/debug/, "") : req.url;
-
-    await handler(req, res, url, debugHref, nodebugHref, {
+    await handler(req, res, url, {
       citoid: false,
       debug,
       format: "html",
@@ -197,9 +178,6 @@ async function handler(
   req: Parameters<RequestHandler>[0],
   res: Parameters<RequestHandler>[1],
   url: string | undefined,
-  // fixme: remove
-  debugHref: string,
-  nodebugHref: string,
   options: Options
 ) {
   if (url === undefined) {
@@ -375,13 +353,20 @@ async function handler(
       res.send(req.t("error.noTranslation"));
       return;
     }
+    const query: ReqQuery = {
+      citoid: options.citoid ? "true" : "false",
+      debug: options.debug ? "true" : "false",
+      format: "html",
+      tests: options.tests ? "true" : "false",
+      url: url,
+    };
+    if (options.sandbox !== undefined) query.sandbox = options.sandbox;
+
     const html = makeHtmlResponse(
       results,
       citations,
       options.debug,
-      options.sandbox,
-      debugHref,
-      nodebugHref,
+      query,
       domain,
       req.t
     );
@@ -466,10 +451,7 @@ function makeHtmlResponse(
   targetResults: TargetResult[],
   citations: Array<Parameters<typeof getEmbeddableMetadata>[0]>,
   debug: boolean,
-  sandbox: string | undefined,
-  // fixme: remove
-  debugHref: string,
-  nodebugHref: string,
+  query: ReqQuery,
   domain: Domain,
   t: TFunction
 ): string {
@@ -511,13 +493,10 @@ function makeHtmlResponse(
         domain: domain.domain,
         patterns,
         citations: citationResults,
-        // todo: we will have to change this when we support a base endpoint
-        // controlled with query string parameters, see T305750
-        debugHref,
-        nodebugHref,
       },
       context: {
         t,
+        query,
         storage: {
           // todo: the domain object should have a storage property (T306553)
           // assuming here all configuration objects have the same storage root and path
@@ -533,7 +512,6 @@ function makeHtmlResponse(
           },
         },
         debug,
-        sandbox: sandbox ?? "",
         schemas: {
           patterns: SCHEMAS_PATH + "patterns.schema.json",
           templates: SCHEMAS_PATH + "templates.schema.json",

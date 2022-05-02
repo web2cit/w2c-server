@@ -107,7 +107,7 @@ export type EditorParams = {
   schema: string;
 };
 
-interface ReqQuery {
+export interface ReqQuery {
   url: string;
   citoid?: "true" | "false";
   debug?: "true" | "false";

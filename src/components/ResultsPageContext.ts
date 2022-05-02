@@ -1,12 +1,13 @@
 import { createContext } from "react";
 import { TOptions } from "i18next";
+import { ReqQuery } from "../types";
 
 export type TFunctionLike = (key: string, options?: TOptions) => string;
 
 export type ResultsPageContextValue = {
   t: TFunctionLike;
-  sandbox: string;
   debug: boolean;
+  query: ReqQuery;
   storage: {
     instance: string;
     wiki: string;
@@ -27,8 +28,8 @@ export type ResultsPageContextValue = {
 
 const defaultValue: ResultsPageContextValue = {
   t: (key: string) => key,
-  sandbox: "",
   debug: false,
+  query: { url: "" },
   storage: {
     instance: "",
     wiki: "",

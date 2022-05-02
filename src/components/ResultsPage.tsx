@@ -9,14 +9,17 @@ export interface ResultsPageProps {
   domain: string;
   patterns: PatternResult[];
   citations: CitationResult[];
-  debugHref: string;
-  nodebugHref: string;
 }
 
 export default function (props: ResultsPageProps) {
-  const { t, debug } = useContext(ResultsPageContext);
-  const debugEnable = `<a href=${props.debugHref}>${t("debug.enable")}</a>`;
-  const debugDisable = `<a href=${props.nodebugHref}>${t("debug.disable")}</a>`;
+  const { t, debug, query } = useContext(ResultsPageContext);
+  const debugHref =
+    "/translate?" + new URLSearchParams({ ...query, debug: "true" }).toString();
+  const nodebugHref =
+    "/translate?" +
+    new URLSearchParams({ ...query, debug: "false" }).toString();
+  const debugEnable = `<a href=${debugHref}>${t("debug.enable")}</a>`;
+  const debugDisable = `<a href=${nodebugHref}>${t("debug.disable")}</a>`;
   return (
     <html
       // xmlns="http://www.w3.org/1999/xhtml"
