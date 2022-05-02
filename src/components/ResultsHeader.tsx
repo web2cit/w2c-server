@@ -58,7 +58,7 @@ export default function (props: ResultsHeaderProps) {
               />
             </label>
           </form>
-          <script dangerouslySetInnerHTML={{ __html: "init();" }} />
+          <script dangerouslySetInnerHTML={{ __html: "initResults();" }} />
         </div>
       </p>
     </header>

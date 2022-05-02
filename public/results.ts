@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function init() {
+function initResults() {
   const switchButton = document.querySelector("input#switch") as HTMLInputElement;
   function userInputEventHandler(e: Event) {
     const input = e.target as HTMLInputElement;

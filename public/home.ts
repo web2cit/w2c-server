@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function init() {
+function initHome() {
   const form = document.querySelector("form");
   if (form === null) {
     throw new Error("Could not find form element");

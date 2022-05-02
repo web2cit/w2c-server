@@ -61,7 +61,7 @@ export default function (props: HomePageProps) {
             </form>
           </div>
         </div>
-        <script dangerouslySetInnerHTML={{ __html: "init();" }} />
+        <script dangerouslySetInnerHTML={{ __html: "initHome();" }} />
       </body>
     </html>
   );
