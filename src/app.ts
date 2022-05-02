@@ -14,8 +14,13 @@ import {
 } from "./types";
 import { TranslationOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
-import { CitoidCitation } from "web2cit/dist/citoid";
 import HomePage from "./components/HomePage";
+import {
+  MediaWikiCitation,
+  WebToCitCitation,
+} from "web2cit/dist/citation/citationTypes";
+
+type Citation = MediaWikiCitation | WebToCitCitation;
 
 const SCHEMAS_PATH =
   "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/";
@@ -226,6 +231,12 @@ async function handler(
     return;
   }
 
+  if (options.citoid) {
+    // make the citoid cache fetch its data
+    // regardless of whether it is needed or not by one of the translation procedures
+    target.cache.citoid.getData();
+  }
+
   let domain: Domain;
   try {
     domain = new Domain(target.domain);
@@ -317,9 +328,7 @@ async function handler(
   }
 
   const results: TargetResult[] = [];
-  const citations: NonNullable<
-    TranslationOutput["translation"]["outputs"][number]["citation"]
-  >[] = [];
+  const citations: Citation[] = [];
   for (const targetOutput of targetOutputs) {
     const targetResult: TargetResult = {
       href: target.url.origin + targetOutput.target.path,
@@ -328,6 +337,13 @@ async function handler(
       results: [],
     };
     const targetCitations: typeof citations = [];
+    if (options.citoid) {
+      // todo: add the corresponding translation result too
+      // targetResult.results.push({})
+      const citation = (await target.cache.citoid.getData()).citation;
+      targetCitations.push(citation.mediawiki);
+    }
+
     for (const templateOutput of targetOutput.translation.outputs) {
       if (templateOutput.template.applicable) {
         if (options.format !== "mediawiki") {
@@ -372,7 +388,7 @@ async function handler(
     res.send(html);
   } else if (options.format === "mediawiki") {
     // todo: handle citoid option
-    res.json(citations as CitoidCitation[]);
+    res.json(citations as Citation[]);
   } else if (options.format === "json") {
     res.json(results);
   }
@@ -403,11 +419,7 @@ function makeTranslationResult(
   return translationResult;
 }
 
-function getEmbeddableMetadata(
-  citation: NonNullable<
-    TranslationOutput["translation"]["outputs"][number]["citation"]
-  >
-): CitationResult["data"] {
+function getEmbeddableMetadata(citation: Citation): CitationResult["data"] {
   const citationData: CitationResult["data"] = [];
   (Object.keys(citation) as Array<keyof typeof citation>).forEach((field) => {
     if (field === "key" || field === "version" || field === "source") return;
