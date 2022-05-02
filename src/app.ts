@@ -110,13 +110,7 @@ app.get(
       return;
     }
 
-    await handler(
-      req,
-      res,
-      // fixme
-      `${req.query.url}`,
-      options
-    );
+    await handler(req, res, req.query.url, options);
   })
 );
 app.get(
@@ -372,7 +366,6 @@ async function handler(
     );
     res.send(html);
   } else if (options.format === "mediawiki") {
-    // todo: handle citoid option
     res.json(citations as Citation[]);
   } else if (options.format === "json") {
     res.json(results);
