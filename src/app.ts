@@ -238,12 +238,26 @@ async function handler(
   await Promise.all([
     domain.templates.getLatestRevision().then((templatesRevision) => {
       if (templatesRevision !== undefined) {
-        domain.templates.loadRevision(templatesRevision);
+        try {
+          domain.templates.loadRevision(templatesRevision);
+        } catch (error) {
+          console.warn(
+            `Could not load templates revision id ${templatesRevision.revid}: ` +
+              error
+          );
+        }
       }
     }),
     domain.patterns.getLatestRevision().then((patternsRevision) => {
       if (patternsRevision !== undefined) {
-        domain.patterns.loadRevision(patternsRevision);
+        try {
+          domain.patterns.loadRevision(patternsRevision);
+        } catch (error) {
+          console.warn(
+            `Could not load patterns revision id ${patternsRevision.revid}: ` +
+              error
+          );
+        }
       }
     }),
   ]);
