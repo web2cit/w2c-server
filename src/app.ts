@@ -130,7 +130,8 @@ app.get(
 
     const { user } = match.groups ?? {};
 
-    const { url } = match.groups ?? {};
+    let { url } = match.groups ?? {};
+    url = url && decodeURIComponent(url);
 
     await handler(req, res, url, {
       citoid: false,
