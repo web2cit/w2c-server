@@ -21,13 +21,22 @@
       <p id="warning-box"></p>
       <div id='editor-container'></div>
     </div>
-    <h2>Save</h2>
+    <h2>Save as</h2>
     <form id="form" target="_blank" method="post" enctype="application/x-www-form-urlencoded">
       <input name="wpDiff" hidden value="Show changes">
       <textarea id="wpTextbox1" name="wpTextbox1" hidden></textarea>
-      <input name="wpUltimateParam" hidden value=1>      
-      Save to: <input id="title" name="title" size="50">
-      <input id="submit" form="form" value="Review changes and save" type="submit" disabled="true">
+      <input name="wpUltimateParam" hidden value=1>
+      <div>
+        <div class="title">
+          <input id="title" name="title" size="50">
+          <p>
+            Prepend "User:<span>YourUserName</span>/" to save to your user sandbox
+          </p>
+        </div>
+        <div class="submit">
+          <input id="submit" form="form" value="Review changes and save" type="submit" disabled="true">
+        </div>
+      </div>
     </form>
     <script>
       const textbox = document.querySelector('#wpTextbox1');

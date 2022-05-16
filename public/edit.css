@@ -20,3 +20,17 @@ body {
 div[data-schematype]:not([data-schematype="object"]):hover {
   background-color: rgba(165, 200, 255, .5) !important;
 } */
+
+div.title {
+  display: inline-block;
+}
+div.title p {
+  font-style: italic;
+}
+div.title p span {
+  font-style: normal;
+}
+div.submit {
+  display: inline-block;
+  vertical-align: top;
+}
