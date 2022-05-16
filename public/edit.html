@@ -27,7 +27,7 @@
       <textarea id="wpTextbox1" name="wpTextbox1" hidden></textarea>
       <input name="wpUltimateParam" hidden value=1>      
       Save to: <input id="title" name="title" size="50">
-      <input id="submit" form="form" value="Review changes and save" type="submit" >
+      <input id="submit" form="form" value="Review changes and save" type="submit" disabled="true">
     </form>
     <script>
       let initialValue;
@@ -112,9 +112,16 @@
               }
             } else {
               initialValue = newValue;
-            }            
+            }
+            // disable submit button if there are validation errors
+            const submit = document.querySelector('#submit');
+            const errors = editor.validate();
+            if (errors.length) {
+              submit.disabled = true;
+            } else{
+              submit.disabled = false;
+            }
           });
-          document.querySelector('#submit').disabled = false;
         } catch (error) {
           editorContainer.textContent = (
             `Could not generate JSON editor: ${error}`
