@@ -30,6 +30,7 @@
       <input id="submit" form="form" value="Review changes and save" type="submit" disabled="true">
     </form>
     <script>
+      const textbox = document.querySelector('#wpTextbox1');
       let initialValue;
       let changed = false;
       // todo: move script out as ts file
@@ -97,7 +98,6 @@
             }
           });
           editor.on('change', function () {
-            const textbox = document.querySelector('#wpTextbox1');
             const newValue = JSON.stringify(
               editor.getValue(),
               null,
@@ -143,7 +143,13 @@
       document.querySelector("a").href = href;
       document.querySelector("a").target = "_blank";
       document.querySelector("a").textContent = title;
-      document.querySelector("form").action = instance + "?action=submit";
+      const form = document.querySelector("form");
+      form.action = instance + "?action=submit";
+      form.onsubmit = () => {
+        // restart beforeunload handler upon submission
+        initialValue = textbox.textContent;
+        changed = false;
+      }
       // document.querySelector("form").action = instance + "?action=submit&model=json&format=application/json";
       const warningBox = document.getElementById("warning-box");
       const editorContainer = document.getElementById('editor-container');
