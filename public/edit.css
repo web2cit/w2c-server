@@ -8,18 +8,13 @@ body {
 #editor-container.error {
   background-color: rgba(255,0,0,.5)
 }
-.je-object__container {
-  padding-left: 1em;
+.content {
+  border-color: lightgray;
+  border-style: solid;
 }
 #warning-box {
   background-color: rgba(255, 255, 0, .2);
 }
-/* .je-panel {
-  background-color: rgba(0, 100, 255, 0.05) !important;
-}
-div[data-schematype]:not([data-schematype="object"]):hover {
-  background-color: rgba(165, 200, 255, .5) !important;
-} */
 
 div.title {
   display: inline-block;
@@ -33,4 +28,14 @@ div.title p span {
 div.submit {
   display: inline-block;
   vertical-align: top;
+}
+
+/* Make the "required" field popover behave like a popover-right popover */
+[data-schemapath*="required"] .popover.popover-left .popover-container {
+  left:100%;
+  top:50%
+}
+[data-schemapath*="required"] .popover.popover-left :focus+.popover-container,
+[data-schemapath*="required"] .popover.popover-left:hover .popover-container {
+  transform:translate(0,-50%) scale(1)
 }
