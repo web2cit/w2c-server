@@ -24,6 +24,10 @@ body {
   border-color: maroon !important;
 }
 
+.table {
+  display: table !important;
+}
+
 div.title {
   display: inline-block;
 }
