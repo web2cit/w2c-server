@@ -37,7 +37,7 @@
   "debug.disable": "Desactive la depuración",
   "field.itemType": "Tipo de elemento",
   "field.title": "Título",
-  "field.authorLast": "Autores: apellidos",
+  "field.authorLast": "Autores: apellidos o nombres completos",
   "field.authorFirst": "Autores: nombres",
   "field.date": "Fecha de publicación",
   "field.publishedIn": "Publicado en",

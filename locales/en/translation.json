@@ -37,7 +37,7 @@
   "debug.disable": "Disable debugging",
   "field.itemType": "Item type",
   "field.title": "Title",
-  "field.authorLast": "Author last names",
+  "field.authorLast": "Author last or full names",
   "field.authorFirst": "Author first names",
   "field.date": "Publication date",
   "field.publishedIn": "Published in",
