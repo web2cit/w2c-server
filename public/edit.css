@@ -15,6 +15,14 @@ body {
 #warning-box {
   background-color: rgba(255, 255, 0, .2);
 }
+.json-editor-btn-add {
+  background: darkgreen !important;
+  border-color: darkolivegreen !important;
+}
+.json-editor-btn-delete {
+  background: firebrick !important;
+  border-color: maroon !important;
+}
 
 div.title {
   display: inline-block;
