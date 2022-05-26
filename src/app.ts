@@ -128,7 +128,9 @@ app.get(
     const debug =
       match.groups !== undefined && match.groups.debug !== undefined;
 
-    const { user } = match.groups ?? {};
+    let { user } = match.groups ?? {};
+    // Fix T309321: handle user names with spaces
+    user = user && decodeURI(user);
 
     let { url } = match.groups ?? {};
     url = url && decodeURIComponent(url);
