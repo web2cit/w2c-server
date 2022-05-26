@@ -155,13 +155,13 @@
       document.querySelector("a").target = "_blank";
       document.querySelector("a").textContent = title;
       const form = document.querySelector("form");
-      form.action = instance + "?action=submit";
+      form.action = instance + "/w/index.php" + "?action=submit";
       form.onsubmit = () => {
         // restart beforeunload handler upon submission
         initialValue = textbox.textContent;
         changed = false;
       }
-      // document.querySelector("form").action = instance + "?action=submit&model=json&format=application/json";
+      // document.querySelector("form").action = instance + "/w/index.php" + "?action=submit&model=json&format=application/json";
       const warningBox = document.getElementById("warning-box");
       const editorContainer = document.getElementById('editor-container');
       init(warningBox, editorContainer);
