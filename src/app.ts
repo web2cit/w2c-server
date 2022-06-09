@@ -189,8 +189,11 @@ async function handler(
     return;
   }
 
-  // multiple targets should be supported, for example to show translation
-  // results for all test webpages defined for a domain
+  // overwrite the api to request domain and path separately
+  // we may request url too (easier for the home page form?)
+
+  // target may be undefined, meaning all paths in template and test configs
+  // must be translated
   let target;
   try {
     target = new Webpage(url);
@@ -206,15 +209,11 @@ async function handler(
     return;
   }
 
-  if (options.citoid) {
-    // make the citoid cache fetch its data
-    // regardless of whether it is needed or not by one of the translation procedures
-    target.cache.citoid.getData();
-  }
+  const { domain: domainName, path: targetPath } = target;
 
   let domain: Domain;
   try {
-    domain = new Domain(target.domain);
+    domain = new Domain(domainName);
   } catch (error) {
     if (error instanceof Error) {
       res.status(400);
@@ -230,67 +229,39 @@ async function handler(
     }
   }
 
+  const targetPaths = targetPath ? [targetPath] : domain.getPaths();
+
+  if (options.citoid) {
+    // Will we learn just here if the path has some problems?
+    for (const path of targetPaths) {
+      const target = domain.webpages.getWebpage(targetPath);
+      // Make the citoid cache fetch its data
+      // regardless of whether it is needed or not by one of the translation procedures.
+      target.cache.citoid.getData();
+    }    
+  };
+
   if (options.sandbox) {
     const user = options.sandbox;
     // todo: storage root should be given to the Domain constructor (T306553)
-    domain.templates.storage.root = `User:${user}/Web2Cit/data/`;
-    domain.patterns.storage.root = `User:${user}/Web2Cit/data/`;
+    let storageRoot = domain.templates.storage.root;
+    storageRoot = `User:${user}/` + storageRoot;
+    domain.templates.storage.root = storageRoot;
+    domain.patterns.storage.root = storageRoot;
+    domain.tests.storage.root = storageRoot;
   }
+  domain.fetchAndLoadConfigs();
 
-  // todo: consider having an init method (T306555)
-  await Promise.all([
-    domain.templates.getLatestRevision().then((templatesRevision) => {
-      if (templatesRevision !== undefined) {
-        try {
-          domain.templates.loadRevision(templatesRevision);
-        } catch (error) {
-          console.warn(
-            `Could not load templates revision id ${templatesRevision.revid}: ` +
-              error
-          );
-        }
-      }
-    }),
-    domain.patterns.getLatestRevision().then((patternsRevision) => {
-      if (patternsRevision !== undefined) {
-        try {
-          domain.patterns.loadRevision(patternsRevision);
-        } catch (error) {
-          console.warn(
-            `Could not load patterns revision id ${patternsRevision.revid}: ` +
-              error
-          );
-        }
-      }
-    }),
-  ]);
-
-  const targetOutputs: Awaited<ReturnType<Domain["translate"]>>[] = [];
-
-  try {
-    if (options.debug) {
-      targetOutputs.push(
-        await domain.translate(target, {
-          // return non-applicable template outputs
-          onlyApplicable: false,
-          //
-          templateFieldInfo: true,
-        })
-      );
-    } else {
-      targetOutputs.push(
-        await domain.translate(target, {
-          // The core library currently returns mediawiki-compatible citation
-          // metadata. We need this in the server to embed citation metadata
-          // that Zotero and Citoid can understand. However, if we want to show
-          // translation and expected outputs we need to have access to the raw
-          // field outputs (i.e., not formatted as mediawiki citation)
-          // See T306132, about having a format-agnostic Citation object; and
-          // T302431, about updating output interfaces in w2c-core.
-          templateFieldInfo: true,
-        })
-      );
+  const targetOutputPromises = domain.translate(targetPaths, {
+      // if debug enabled, return non-applicable template outputs
+      "onlyApplicable": options.debug ? false : true
     }
+  );
+
+  const targetOutputOutcomes = Promise.allSettled(targetOutputPromises);
+
+  
+// if individual targets fail, we should not fail the whole thing
   } catch (error) {
     if (error instanceof Error) {
       // fixme: we should treat differently 404 errors from target server

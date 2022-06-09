@@ -109,6 +109,8 @@ export type EditorParams = {
 
 export interface ReqQuery {
   url: string;
+  // domain: string;
+  // path: string;
   citoid?: "true" | "false";
   debug?: "true" | "false";
   format?: "html" | "json" | "mediawiki";
