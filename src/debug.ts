@@ -1,23 +1,28 @@
 import { DebugJson, DebugTemplate, DebugField, DebugProcedure } from "./types";
-import { TranslationOutput } from "web2cit/dist/domain/domain";
+import { TargetOutput } from "web2cit/dist/domain/domain";
 
 export function makeDebugJson(
-  targetOutput: TranslationOutput,
-  patternsRevid: number | undefined,
-  templatesRevid: number | undefined
+  targetOutput: TargetOutput,
+  patternsRevid: number,
+  templatesRevid: number,
+  testsRevid: number | undefined
 ): DebugJson {
   const debugJson: DebugJson = {
     config: {
-      patterns: patternsRevid
-        ? `revid ${patternsRevid}`
-        : "not found or corrupt",
-      templates: templatesRevid
-        ? `revid ${templatesRevid}`
-        : "not found or corrupt",
+      patterns:
+        patternsRevid !== 0 ? `revid ${patternsRevid}` : "not found or corrupt",
+      templates:
+        templatesRevid !== 0
+          ? `revid ${templatesRevid}`
+          : "not found or corrupt",
     },
     pattern: targetOutput.translation.pattern ?? "",
     templates: [],
   };
+  if (testsRevid !== undefined) {
+    debugJson.config.tests =
+      testsRevid !== 0 ? `revid ${testsRevid}` : "not found or corrupt";
+  }
   for (const templateOutput of targetOutput.translation.outputs) {
     const debugTemplate: DebugTemplate = {
       path: templateOutput.template.path ?? "fallback",
