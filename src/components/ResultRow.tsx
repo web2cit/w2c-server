@@ -5,11 +5,6 @@ import { TranslationField } from "../types";
 
 interface ResultRowProps {
   field: TranslationField;
-  // show notice until tests are supported
-  _temp: {
-    index: number;
-    count: number;
-  };
 }
 
 export default function (props: ResultRowProps) {
@@ -22,19 +17,12 @@ export default function (props: ResultRowProps) {
         <br />({field.name})
       </th>
       <OutputCell output={field.output} />
-      {/* show notice until tests are supported
-      <OutputCell output={field.test} /> */}
-      {props._temp.index === 0 && (
-        <td rowSpan={props._temp.count}>
-          {t("tests.unsupported")}
-          <br />(
-          <a href="https://phabricator.wikimedia.org/T302724" target="_blank">
-            T302724
-          </a>
-          )
-        </td>
-      )}
-      <td>{field.score === undefined ? t("nonApplicable") : field.score}</td>
+      <OutputCell output={field.test} />
+      <td>
+        {field.score === undefined
+          ? t("nonApplicable")
+          : `${Math.round(field.score * 100)}%`}
+      </td>
     </tr>
   );
 }

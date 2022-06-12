@@ -22,14 +22,17 @@ export default function (props: PatternSectionProps) {
   return (
     <section className="pattern">
       <H level={headingLevel}>
-        {t("pattern", { label, context: patternType }) + " " + pattern + " "}(
-        <a
-          href={"/edit.html?" + new URLSearchParams(editorParams).toString()}
-          target="_blank"
-        >
-          {t("edit")}
-        </a>
-        )
+        {pattern !== undefined
+          ? t("pattern", { label, context: patternType }) + " " + pattern + " "
+          : t("pattern", { context: "undefined" })}
+        {pattern !== undefined && (
+          <a
+            href={"/edit.html?" + new URLSearchParams(editorParams).toString()}
+            target="_blank"
+          >
+            {t("edit")}
+          </a>
+        )}
       </H>
       {targets.map((target) => (
         <TargetSection

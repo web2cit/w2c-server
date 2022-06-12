@@ -110,7 +110,12 @@ app.get(
       return;
     }
 
-    if (options.format === "html" && options.tests && !options.citoid) {
+    if (
+      options.format === "html" &&
+      options.tests &&
+      !options.citoid &&
+      targetPath
+    ) {
       let path = "/";
       if (options.debug) path += "debug/";
       if (options.sandbox) path += `sandbox/${options.sandbox}/`;
@@ -219,6 +224,9 @@ async function handler(
     }
   }
 
+  // fixme: do not fetch configuration files if target path is invalid
+  await domain.fetchAndLoadConfigs(options.tests);
+
   // if target path unspecified, use all paths in template and test configs
   const targetPaths = targetPath ? [targetPath] : domain.getPaths();
 
@@ -252,11 +260,6 @@ async function handler(
     domain.tests.storage.root = storageRoot;
   }
 
-  // do not fetch configuration files if there are no valid target paths
-  if (validTargetPaths.length > 0) {
-    domain.fetchAndLoadConfigs(options.tests);
-  }
-
   const targetOutputs = await domain.translate(targetPaths, {
     // if debug enabled, return non-applicable template outputs
     onlyApplicable: options.debug ? false : true,
@@ -278,33 +281,13 @@ async function handler(
     };
     const targetCitations: typeof citations = [];
 
-    if (targetPath in validTargetPaths) {
+    if (validTargetPaths.includes(targetPath)) {
       const target = domain.webpages.getWebpage(targetPath);
       const targetOutput = outputsByTarget.get(targetPath)!;
 
+      targetResult.href = "https://" + domain.domain + targetPath;
       targetResult.pattern = targetOutput.translation.pattern;
       targetResult.error = targetOutput.translation.error;
-      // if (error !== undefined) {
-      //   // fixme: we should treat differently 404 errors from target server
-      //   // than from citoid api; see T304773
-      //   if (error instanceof HTTPResponseError) {
-      //     const response = error.response;
-      //     res.status(response.status);
-      //     const message =
-      //       `${req.t("error.external")} | ` +
-      //       req.t("error.external.details", {
-      //         url: error.url,
-      //         code: response.status,
-      //         message: response.statusText,
-      //       });
-      //     if (options.format === "html") {
-      //       res.send(message);
-      //     } else {
-      //       res.json({ error: message });
-      //     }
-      //     return;
-      //   }
-      // }
 
       for (const templateOutput of targetOutput.translation.outputs) {
         if (templateOutput.template.applicable) {
@@ -346,6 +329,8 @@ async function handler(
   }
 
   if (options.format === "html") {
+    // fixme: before, if the path was invalid, we threw an error
+    // now, we show that as a target error
     if (citations.length === 0) {
       // fixes T305166
       res.status(404);
@@ -400,16 +385,29 @@ function makeTranslationResult(
     },
     fields: [],
   };
-  const fields = templateOutput.template.fields ?? [];
-  for (const field of fields) {
-    if (field.valid) {
-      translationResult.fields.push({
-        name: field.name,
-        output: field.output,
-        test: undefined,
-        score: undefined,
-      });
-    }
+  const fieldNames = Array.from(
+    new Set([
+      // valid fields from template output
+      ...templateOutput.template.fields
+        .filter((field) => field.valid)
+        .map((field) => field.name),
+      // test fields
+      ...templateOutput.scores.fields.map((field) => field.fieldname),
+    ])
+  );
+  for (const fieldName of fieldNames) {
+    const outputField = templateOutput.template.fields.filter(
+      (field) => field.name === fieldName
+    )[0];
+    const testField = templateOutput.scores.fields.filter(
+      (field) => field.fieldname === fieldName
+    )[0];
+    translationResult.fields.push({
+      name: fieldName,
+      output: outputField && outputField.output,
+      test: testField && testField.goal,
+      score: testField && testField.score,
+    });
   }
   return translationResult;
 }

@@ -4,6 +4,7 @@ import TranslationResultSection from "./TranslationResultSection";
 import TranslationDebugFooter from "./TranslationDebugFooter";
 import { TargetResult } from "../types";
 import H, { HeadingLevel } from "./Heading";
+import TranslationError from "./TranslationError";
 
 interface TargetSectionProps {
   target: TargetResult;
@@ -24,18 +25,22 @@ export default function (props: TargetSectionProps) {
         </H>
       </header>
       <main>
-        {props.target.results.map((result, index) => (
-          <TranslationResultSection
-            translation={result}
-            index={index}
-            headingLevel={(headingLevel + 1) as HeadingLevel}
-            key={result.template.path ?? "fallback"}
-          />
-        ))}
+        {props.target.error === undefined ? (
+          props.target.results.map((result, index) => (
+            <TranslationResultSection
+              translation={result}
+              index={index}
+              headingLevel={(headingLevel + 1) as HeadingLevel}
+              key={result.template.path ?? "fallback"}
+            />
+          ))
+        ) : (
+          <TranslationError error={props.target.error} />
+        )}
       </main>
-      {debug && props.target.debugJson && (
+      {props.target.error === undefined && debug && props.target.debug && (
         <TranslationDebugFooter
-          debugJson={props.target.debugJson}
+          debugJson={props.target.debug}
           headingLevel={(headingLevel + 1) as HeadingLevel}
         />
       )}
