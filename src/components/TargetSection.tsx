@@ -35,7 +35,10 @@ export default function (props: TargetSectionProps) {
             />
           ))
         ) : (
-          <TranslationError error={props.target.error} />
+          <TranslationError
+            error={props.target.error}
+            headingLevel={(headingLevel + 1) as HeadingLevel}
+          />
         )}
       </main>
       {props.target.error === undefined && debug && props.target.debug && (

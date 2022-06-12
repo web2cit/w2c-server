@@ -114,7 +114,8 @@ app.get(
       options.format === "html" &&
       options.tests &&
       !options.citoid &&
-      targetPath
+      targetPath &&
+      targetPath[0] === "/"
     ) {
       let path = "/";
       if (options.debug) path += "debug/";
@@ -224,11 +225,22 @@ async function handler(
     }
   }
 
-  // fixme: do not fetch configuration files if target path is invalid
-  await domain.fetchAndLoadConfigs(options.tests);
+  let configsFetched = false;
+  let targetPaths;
+  if (targetPath === undefined) {
+    // if target path unspecified, use all paths in template and test configs
+    await domain.fetchAndLoadConfigs(options.tests);
+    configsFetched = true;
+    targetPaths = domain.getPaths();
+  } else {
+    targetPaths = [targetPath];
+  }
 
-  // if target path unspecified, use all paths in template and test configs
-  const targetPaths = targetPath ? [targetPath] : domain.getPaths();
+  if (targetPaths.length === 0) {
+    res.status(404);
+    res.send(req.t("error.noTargetPaths"));
+    return;
+  }
 
   // ignore invalid target paths
   const validTargetPaths = targetPaths.reduce((valid: string[], targetPath) => {
@@ -240,6 +252,10 @@ async function handler(
     }
     return valid;
   }, []);
+
+  if (!configsFetched && validTargetPaths.length) {
+    await domain.fetchAndLoadConfigs();
+  }
 
   if (options.citoid) {
     for (const targetPath of validTargetPaths) {
@@ -260,7 +276,7 @@ async function handler(
     domain.tests.storage.root = storageRoot;
   }
 
-  const targetOutputs = await domain.translate(targetPaths, {
+  const targetOutputs = await domain.translate(validTargetPaths, {
     // if debug enabled, return non-applicable template outputs
     onlyApplicable: options.debug ? false : true,
   });
@@ -283,9 +299,12 @@ async function handler(
 
     if (validTargetPaths.includes(targetPath)) {
       const target = domain.webpages.getWebpage(targetPath);
-      const targetOutput = outputsByTarget.get(targetPath)!;
+      // use target.path because targetPath may have been changed by
+      // the Webpage constructor; e.g., "\h/" -> "/h/"
+      const targetOutput = outputsByTarget.get(target.path)!;
 
-      targetResult.href = "https://" + domain.domain + targetPath;
+      targetResult.path = target.path; // update the path in the target result
+      targetResult.href = target.url.href;
       targetResult.pattern = targetOutput.translation.pattern;
       targetResult.error = targetOutput.translation.error;
 
@@ -320,7 +339,7 @@ async function handler(
     } else {
       targetResult.error = {
         name: INVALID_PATH_ERROR_NAME,
-        message: `"${targetPath} is not a valid path for domain "${domain.domain}`,
+        message: `"${targetPath}" is not a valid path for domain "${domain.domain}"`,
       };
     }
 
@@ -329,13 +348,11 @@ async function handler(
   }
 
   if (options.format === "html") {
-    // fixme: before, if the path was invalid, we threw an error
-    // now, we show that as a target error
     if (citations.length === 0) {
       // fixes T305166
       res.status(404);
-      res.send(req.t("error.noTranslation"));
-      return;
+      // res.send(req.t("error.noTranslation"));
+      // return;
     }
     const query: ReqQuery = {
       citoid: options.citoid ? "true" : "false",
@@ -343,8 +360,8 @@ async function handler(
       format: "html",
       tests: options.tests ? "true" : "false",
       domain: domainName,
-      path: targetPath,
     };
+    if (targetPath !== undefined) query.path = targetPath;
     if (options.sandbox !== undefined) query.sandbox = options.sandbox;
 
     const html = makeHtmlResponse(
@@ -367,6 +384,8 @@ async function handler(
             name: value.name,
             message: value.message,
           };
+        } else {
+          return value;
         }
       })
     );

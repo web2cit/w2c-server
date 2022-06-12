@@ -17,7 +17,7 @@ export default function (props: TranslationErrorProps) {
   if (error instanceof HTTPResponseError) {
     const response = error.response;
     description =
-      `${t("error.external")} | ` +
+      `${t("error.external")}: ` +
       t("error.external.details", {
         url: error.url,
         code: response.status,
@@ -27,7 +27,7 @@ export default function (props: TranslationErrorProps) {
     description = `${error.name}: ${error.message}`;
   }
   return (
-    <div>
+    <div className="translation-error">
       <H level={props.headingLevel}>{t("error.targetTranslation")}</H>
       <p>{description}</p>
     </div>

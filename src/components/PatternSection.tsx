@@ -26,12 +26,18 @@ export default function (props: PatternSectionProps) {
           ? t("pattern", { label, context: patternType }) + " " + pattern + " "
           : t("pattern", { context: "undefined" })}
         {pattern !== undefined && (
-          <a
-            href={"/edit.html?" + new URLSearchParams(editorParams).toString()}
-            target="_blank"
-          >
-            {t("edit")}
-          </a>
+          <>
+            (
+            <a
+              href={
+                "/edit.html?" + new URLSearchParams(editorParams).toString()
+              }
+              target="_blank"
+            >
+              {t("edit")}
+            </a>
+            )
+          </>
         )}
       </H>
       {targets.map((target) => (

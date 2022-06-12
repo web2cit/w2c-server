@@ -12,6 +12,7 @@ export type PatternResult = {
 
 export type TargetResult = {
   path: string;
+  href?: string;
   pattern?: string;
   results: TranslationResult[];
   error?: Error;
