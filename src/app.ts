@@ -1,5 +1,5 @@
 import express, { RequestHandler } from "express";
-import { Domain, Webpage, HTTPResponseError } from "web2cit";
+import { Domain, Webpage } from "web2cit";
 import i18next, { TFunction } from "i18next";
 import i18nextMiddleware from "i18next-http-middleware";
 import Backend from "i18next-fs-backend";
@@ -13,7 +13,8 @@ import {
   isReqQuery,
   ReqQuery,
 } from "./types";
-import { TranslationOutput } from "web2cit/dist/domain/domain";
+import { INVALID_PATH_ERROR_NAME } from "./errors";
+import { TargetOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
 import HomePage from "./components/HomePage";
 import {
@@ -80,17 +81,31 @@ app.get(
     if (!isReqQuery(req.query)) {
       res.status(400);
       // todo: consider providing more verbose output
-      // also consider providing json or html response depending on format param
-      res.send("Invalid query");
+      if (req.query.format === "json" || req.query.format === "mediawiki") {
+        res.json({
+          error: "Invalid query",
+        });
+      } else {
+        res.send("Invalid query");
+      }
       return;
     }
-    const url = req.query.url || undefined;
+
+    const {
+      citoid,
+      debug,
+      format,
+      sandbox,
+      tests,
+      path: targetPath,
+    } = req.query as ReqQuery;
+
     const options: Options = {
-      citoid: req.query.citoid === "true" ? true : false,
-      debug: req.query.debug === "true" ? true : false,
-      format: req.query.format ?? "html",
-      sandbox: req.query.sandbox || undefined,
-      tests: req.query.tests === "true" ? true : false,
+      citoid: citoid === "true" ? true : false,
+      debug: debug === "true" ? true : false,
+      format: format ?? "html",
+      sandbox: sandbox || undefined,
+      tests: tests === "true" ? true : false,
     };
 
     if (options.format === "mediawiki" && (options.debug || options.tests)) {
@@ -101,16 +116,25 @@ app.get(
       return;
     }
 
-    if (options.format === "html" && options.tests && !options.citoid) {
+    if (
+      options.format === "html" &&
+      options.tests &&
+      !options.citoid &&
+      (req.query.url || (targetPath && targetPath[0] === "/"))
+    ) {
       let path = "/";
       if (options.debug) path += "debug/";
       if (options.sandbox) path += `sandbox/${options.sandbox}/`;
-      path += url;
+      path += req.query.url ?? "https://" + req.query.domain + targetPath;
       res.redirect(301, path);
       return;
     }
 
-    await handler(req, res, req.query.url, options);
+    if (req.query.domain !== undefined) {
+      await handler(req, res, req.query.domain, targetPath, options);
+    } else {
+      await urlHandler(req, res, req.query.url, options);
+    }
   })
 );
 app.get(
@@ -135,7 +159,13 @@ app.get(
     let { url } = match.groups ?? {};
     url = url && decodeURIComponent(url);
 
-    await handler(req, res, url, {
+    if (url === undefined) {
+      res.status(400);
+      res.send(req.t("error.noTarget"));
+      return;
+    }
+
+    await urlHandler(req, res, url, {
       citoid: false,
       debug,
       format: "html",
@@ -171,50 +201,35 @@ function wrap(
   return wrappedFn;
 }
 
+async function urlHandler(
+  req: Parameters<RequestHandler>[0],
+  res: Parameters<RequestHandler>[1],
+  url: string,
+  options: Options
+) {
+  let domainName, targetPath;
+  try {
+    const target = new Webpage(url);
+    domainName = target.domain;
+    targetPath = target.path;
+  } catch {
+    res.status(400);
+    res.send(`${req.t("error.invalidTarget")}: ${url}`);
+    return;
+  }
+  await handler(req, res, domainName, targetPath, options);
+}
+
 async function handler(
   req: Parameters<RequestHandler>[0],
   res: Parameters<RequestHandler>[1],
-  url: string | undefined,
+  domainName: string,
+  targetPath: string | undefined,
   options: Options
 ) {
-  if (url === undefined) {
-    res.status(400);
-    if (options.format === "html") {
-      res.send(req.t("error.noTarget"));
-    } else {
-      res.json({
-        error: "noTarget",
-      });
-    }
-    return;
-  }
-
-  // multiple targets should be supported, for example to show translation
-  // results for all test webpages defined for a domain
-  let target;
-  try {
-    target = new Webpage(url);
-  } catch {
-    res.status(400);
-    if (options.format === "html") {
-      res.send(`${req.t("error.invalidTarget")}: ${url}`);
-    } else {
-      res.json({
-        error: "invalidTarget",
-      });
-    }
-    return;
-  }
-
-  if (options.citoid) {
-    // make the citoid cache fetch its data
-    // regardless of whether it is needed or not by one of the translation procedures
-    target.cache.citoid.getData();
-  }
-
   let domain: Domain;
   try {
-    domain = new Domain(target.domain);
+    domain = new Domain(domainName);
   } catch (error) {
     if (error instanceof Error) {
       res.status(400);
@@ -230,129 +245,124 @@ async function handler(
     }
   }
 
+  let configsFetched = false;
+  let targetPaths;
+  if (targetPath === undefined) {
+    // if target path unspecified, use all paths in template and test configs
+    await domain.fetchAndLoadConfigs(options.tests);
+    configsFetched = true;
+    targetPaths = domain.getPaths();
+  } else {
+    targetPaths = [targetPath];
+  }
+
+  if (targetPaths.length === 0) {
+    res.status(404);
+    res.send(req.t("error.noTargetPaths"));
+    return;
+  }
+
+  // ignore invalid target paths
+  const validTargetPaths = targetPaths.reduce((valid: string[], targetPath) => {
+    try {
+      domain.webpages.getWebpage(targetPath);
+      valid.push(targetPath);
+    } catch {
+      console.warn(`Could not create webpage object for path "${targetPath}`);
+    }
+    return valid;
+  }, []);
+
+  if (!configsFetched && validTargetPaths.length) {
+    await domain.fetchAndLoadConfigs();
+  }
+
+  if (options.citoid) {
+    for (const targetPath of validTargetPaths) {
+      const target = domain.webpages.getWebpage(targetPath);
+      // Make the citoid cache fetch its data
+      // regardless of whether it is needed or not by one of the translation procedures.
+      target.cache.citoid.getData();
+    }
+  }
+
   if (options.sandbox) {
     const user = options.sandbox;
     // todo: storage root should be given to the Domain constructor (T306553)
-    domain.templates.storage.root = `User:${user}/Web2Cit/data/`;
-    domain.patterns.storage.root = `User:${user}/Web2Cit/data/`;
+    let storageRoot = domain.templates.storage.root;
+    storageRoot = `User:${user}/` + storageRoot;
+    domain.templates.storage.root = storageRoot;
+    domain.patterns.storage.root = storageRoot;
+    domain.tests.storage.root = storageRoot;
   }
 
-  // todo: consider having an init method (T306555)
-  await Promise.all([
-    domain.templates.getLatestRevision().then((templatesRevision) => {
-      if (templatesRevision !== undefined) {
-        try {
-          domain.templates.loadRevision(templatesRevision);
-        } catch (error) {
-          console.warn(
-            `Could not load templates revision id ${templatesRevision.revid}: ` +
-              error
-          );
-        }
-      }
-    }),
-    domain.patterns.getLatestRevision().then((patternsRevision) => {
-      if (patternsRevision !== undefined) {
-        try {
-          domain.patterns.loadRevision(patternsRevision);
-        } catch (error) {
-          console.warn(
-            `Could not load patterns revision id ${patternsRevision.revid}: ` +
-              error
-          );
-        }
-      }
-    }),
-  ]);
+  const targetOutputs = await domain.translate(validTargetPaths, {
+    // if debug enabled, return non-applicable template outputs
+    onlyApplicable: options.debug ? false : true,
+  });
 
-  const targetOutputs: Awaited<ReturnType<Domain["translate"]>>[] = [];
-
-  try {
-    if (options.debug) {
-      targetOutputs.push(
-        await domain.translate(target, {
-          // return non-applicable template outputs
-          onlyApplicable: false,
-          //
-          templateFieldInfo: true,
-        })
-      );
-    } else {
-      targetOutputs.push(
-        await domain.translate(target, {
-          // The core library currently returns mediawiki-compatible citation
-          // metadata. We need this in the server to embed citation metadata
-          // that Zotero and Citoid can understand. However, if we want to show
-          // translation and expected outputs we need to have access to the raw
-          // field outputs (i.e., not formatted as mediawiki citation)
-          // See T306132, about having a format-agnostic Citation object; and
-          // T302431, about updating output interfaces in w2c-core.
-          templateFieldInfo: true,
-        })
-      );
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      // fixme: we should treat differently 404 errors from target server
-      // than from citoid api; see T304773
-      if (error instanceof HTTPResponseError) {
-        const response = error.response;
-        res.status(response.status);
-        const message =
-          `${req.t("error.external")} | ` +
-          req.t("error.external.details", {
-            url: error.url,
-            code: response.status,
-            message: response.statusText,
-          });
-        if (options.format === "html") {
-          res.send(message);
-        } else {
-          res.json({ error: message });
-        }
-        return;
-      }
-    }
-    throw error;
-  }
+  const outputsByTarget: Map<string, TargetOutput> = new Map(
+    targetOutputs.map((targetOutput) => [
+      targetOutput.target.path,
+      targetOutput,
+    ])
+  );
 
   const results: TargetResult[] = [];
   const citations: Citation[] = [];
-  for (const targetOutput of targetOutputs) {
+  for (const targetPath of targetPaths) {
     const targetResult: TargetResult = {
-      href: target.url.origin + targetOutput.target.path,
-      path: targetOutput.target.path,
-      pattern: targetOutput.translation.pattern,
+      path: targetPath,
       results: [],
     };
     const targetCitations: typeof citations = [];
-    if (options.citoid) {
-      // todo: add the corresponding translation result too
-      // targetResult.results.push({})
-      const citation = (await target.cache.citoid.getData()).citation;
-      targetCitations.push(citation.mediawiki);
+
+    if (validTargetPaths.includes(targetPath)) {
+      const target = domain.webpages.getWebpage(targetPath);
+      // use target.path because targetPath may have been changed by
+      // the Webpage constructor; e.g., "\h/" -> "/h/"
+      const targetOutput = outputsByTarget.get(target.path)!;
+
+      targetResult.path = target.path; // update the path in the target result
+      targetResult.href = target.url.href;
+      targetResult.pattern = targetOutput.translation.pattern;
+      targetResult.error = targetOutput.translation.error;
+
+      for (const templateOutput of targetOutput.translation.outputs) {
+        if (templateOutput.template.applicable) {
+          if (options.format !== "mediawiki") {
+            // mediawiki format includes citations only
+            // do not make translation results unnecessarily
+            const translationResult = makeTranslationResult(templateOutput);
+            targetResult.results.push(translationResult);
+          }
+          // citation should be defined for an applicable template
+          const citation = templateOutput.citation!;
+          targetCitations.push(citation);
+        }
+      }
+      if (options.debug) {
+        targetResult["debug"] = makeDebugJson(
+          targetOutput,
+          domain.patterns.currentRevid ?? 0,
+          domain.templates.currentRevid ?? 0,
+          options.tests ? domain.tests.currentRevid ?? 0 : undefined
+        );
+      }
+
+      if (options.citoid) {
+        // todo: add the corresponding translation result too
+        // targetResult.results.push({})
+        const citation = (await target.cache.citoid.getData()).citation;
+        targetCitations.push(citation.mediawiki);
+      }
+    } else {
+      targetResult.error = {
+        name: INVALID_PATH_ERROR_NAME,
+        message: `"${targetPath}" is not a valid path for domain "${domain.domain}"`,
+      };
     }
 
-    for (const templateOutput of targetOutput.translation.outputs) {
-      if (templateOutput.template.applicable) {
-        if (options.format !== "mediawiki") {
-          // mediawiki format includes citations only
-          // do not make translation results unnecessarily
-          const translationResult = makeTranslationResult(templateOutput);
-          targetResult.results.push(translationResult);
-        }
-        // citation should be defined for an applicable template
-        const citation = templateOutput.citation!;
-        targetCitations.push(citation);
-      }
-    }
-    if (options.debug) {
-      targetResult["debugJson"] = makeDebugJson(
-        targetOutput,
-        domain.patterns.currentRevid,
-        domain.templates.currentRevid
-      );
-    }
     results.push(targetResult);
     citations.push(...targetCitations);
   }
@@ -361,16 +371,17 @@ async function handler(
     if (citations.length === 0) {
       // fixes T305166
       res.status(404);
-      res.send(req.t("error.noTranslation"));
-      return;
+      // res.send(req.t("error.noTranslation"));
+      // return;
     }
     const query: ReqQuery = {
       citoid: options.citoid ? "true" : "false",
       debug: options.debug ? "true" : "false",
       format: "html",
       tests: options.tests ? "true" : "false",
-      url: url,
+      domain: domainName,
     };
+    if (targetPath !== undefined) query.path = targetPath;
     if (options.sandbox !== undefined) query.sandbox = options.sandbox;
 
     const html = makeHtmlResponse(
@@ -385,12 +396,25 @@ async function handler(
   } else if (options.format === "mediawiki") {
     res.json(citations as Citation[]);
   } else if (options.format === "json") {
-    res.json(results);
+    // make error objects stringify-able
+    const json = JSON.parse(
+      JSON.stringify(results, (key, value) => {
+        if (value instanceof Error) {
+          return {
+            name: value.name,
+            message: value.message,
+          };
+        } else {
+          return value;
+        }
+      })
+    );
+    res.json(json);
   }
 }
 
 function makeTranslationResult(
-  templateOutput: TranslationOutput["translation"]["outputs"][number]
+  templateOutput: TargetOutput["translation"]["outputs"][number]
 ): TranslationResult {
   const translationResult: TranslationResult = {
     template: {
@@ -400,16 +424,29 @@ function makeTranslationResult(
     },
     fields: [],
   };
-  const fields = templateOutput.template.fields ?? [];
-  for (const field of fields) {
-    if (field.valid) {
-      translationResult.fields.push({
-        name: field.name,
-        output: field.output,
-        test: undefined,
-        score: undefined,
-      });
-    }
+  const fieldNames = Array.from(
+    new Set([
+      // valid fields from template output
+      ...templateOutput.template.fields
+        .filter((field) => field.valid)
+        .map((field) => field.name),
+      // test fields
+      ...templateOutput.scores.fields.map((field) => field.fieldname),
+    ])
+  );
+  for (const fieldName of fieldNames) {
+    const outputField = templateOutput.template.fields.filter(
+      (field) => field.name === fieldName
+    )[0];
+    const testField = templateOutput.scores.fields.filter(
+      (field) => field.fieldname === fieldName
+    )[0];
+    translationResult.fields.push({
+      name: fieldName,
+      output: outputField && outputField.output,
+      test: testField && testField.goal,
+      score: testField && testField.score,
+    });
   }
   return translationResult;
 }
@@ -465,17 +502,13 @@ function makeHtmlResponse(
   domain: Domain,
   t: TFunction
 ): string {
-  const patternMap: Map<string, PatternResult> = new Map();
+  // pattern may be undefined if:
+  // * target translated with forced templates, or
+  // * target path is invalid
+  const patternMap: Map<string | undefined, PatternResult> = new Map();
   for (const targetResult of targetResults) {
     const pattern = targetResult.pattern;
-    if (pattern === undefined) {
-      // translation would have undefined pattern only if translate method was
-      // called with "forceTemplatePaths" option
-      console.warn(
-        `Skipping forced-template translated target: ${targetResult.path}`
-      );
-      continue;
-    }
+
     if (!patternMap.has(pattern)) {
       const patternResult: PatternResult = {
         pattern: pattern,

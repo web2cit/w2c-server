@@ -5,17 +5,18 @@ export type TranslationSummary = {
 };
 
 export type PatternResult = {
-  pattern: string;
+  pattern: string | undefined;
   label?: string;
   targets: TargetResult[];
 };
 
 export type TargetResult = {
-  href: string;
   path: string;
-  pattern: string | undefined;
+  href?: string;
+  pattern?: string;
   results: TranslationResult[];
-  debugJson?: DebugJson;
+  error?: Error;
+  debug?: DebugJson;
 };
 
 export type TranslationResult = {
@@ -59,6 +60,7 @@ export type DebugJson = JSON & {
   config: {
     patterns: string;
     templates: string;
+    tests?: string;
   };
   pattern: string;
   templates: DebugTemplate[];
@@ -107,17 +109,34 @@ export type EditorParams = {
   schema: string;
 };
 
-export interface ReqQuery {
-  url: string;
+interface QueryOptions {
   citoid?: "true" | "false";
   debug?: "true" | "false";
   format?: "html" | "json" | "mediawiki";
   sandbox?: string;
   tests?: "true" | "false";
 }
+interface DomainQuery extends QueryOptions {
+  domain: string; // consider accepting origin instead
+  path?: string;
+  url?: never;
+}
+interface UrlQuery extends QueryOptions {
+  url: string;
+  domain?: never;
+  path?: never;
+}
+export type ReqQuery = DomainQuery | UrlQuery;
+
 export function isReqQuery(query: unknown): query is ReqQuery {
-  const { citoid, debug, format, sandbox, tests, url } = query as ReqQuery;
-  if (url === undefined || typeof url !== "string") {
+  const { citoid, debug, format, sandbox, tests, domain, path, url } =
+    query as ReqQuery;
+  if (
+    (domain === undefined || typeof domain !== "string") &&
+    (url === undefined || typeof url !== "string")
+  ) {
+    return false;
+  } else if (path !== undefined && typeof path !== "string") {
     return false;
   } else if (sandbox !== undefined && typeof sandbox !== "string") {
     return false;

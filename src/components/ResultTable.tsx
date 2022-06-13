@@ -60,13 +60,8 @@ export default function (props: ResultTableProps) {
         </tr>
       </thead>
       <tbody>
-        {props.fields.map((field, index) => (
-          <ResultRow
-            field={field}
-            key={field.name}
-            // show notice until tests are supported
-            _temp={{ index, count: props.fields.length }}
-          />
+        {props.fields.map((field) => (
+          <ResultRow field={field} key={field.name} />
         ))}
       </tbody>
     </table>

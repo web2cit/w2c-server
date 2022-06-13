@@ -37,7 +37,8 @@ export default function (props: ResultsHeaderProps) {
         </a>
         <div id="switch">
           <form action="/translate">
-            <input hidden readOnly name="url" value={query.url} />
+            <input hidden readOnly name="domain" value={query.domain} />
+            <input hidden readOnly name="path" value={query.path} />
             <input hidden readOnly name="citoid" value={query.citoid} />
             <input hidden readOnly name="debug" value={query.debug} />
             <input hidden readOnly name="format" value={query.format} />

@@ -8,21 +8,23 @@ interface OutputCellProps {
 
 export default function (props: OutputCellProps) {
   const { t } = useContext(ResultsPageContext);
-  return (
-    <td>
-      {props.output === undefined ? (
-        t("nonApplicable")
-      ) : (
-        <table className="output">
-          <tbody>
-            {props.output.map((value, index) => (
-              <tr key={index}>
-                <td>{value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </td>
-  );
+  let output;
+  if (props.output === undefined) {
+    output = t("nonApplicable");
+  } else if (props.output.length === 0) {
+    output = "-";
+  } else {
+    output = (
+      <table className="output">
+        <tbody>
+          {props.output.map((value, index) => (
+            <tr key={index}>
+              <td>{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+  return <td>{output}</td>;
 }

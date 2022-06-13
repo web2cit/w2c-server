@@ -16,6 +16,12 @@ table.output {
 table.json td {
   text-align: left;
 }
+div.translation-error {
+  color: red;
+}
+div.translation-error p {
+  font-style: italic;
+}
 /* show row header label at the top and move down as user scrolls */
 table.json th {
   vertical-align: top;

@@ -29,7 +29,7 @@ export type ResultsPageContextValue = {
 const defaultValue: ResultsPageContextValue = {
   t: (key: string) => key,
   debug: false,
-  query: { url: "" },
+  query: { domain: "" },
   storage: {
     instance: "",
     wiki: "",
