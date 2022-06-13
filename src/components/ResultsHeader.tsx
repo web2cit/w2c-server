@@ -38,11 +38,13 @@ export default function (props: ResultsHeaderProps) {
         <div id="switch">
           <form action="/translate">
             <input hidden readOnly name="domain" value={query.domain} />
-            <input hidden readOnly name="path" value={query.path} />
             <input hidden readOnly name="citoid" value={query.citoid} />
             <input hidden readOnly name="debug" value={query.debug} />
             <input hidden readOnly name="format" value={query.format} />
             <input hidden readOnly name="tests" value={query.tests} />
+            {query.path && (
+              <input hidden readOnly name="path" value={query.path} />
+            )}
             <label>
               {t("switch." + (sandbox ? "main" : "sandbox")) + ": "}
               <input
