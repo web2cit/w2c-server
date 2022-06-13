@@ -91,8 +91,14 @@ app.get(
       return;
     }
 
-    const { citoid, debug, format, sandbox, tests } = req.query as ReqQuery;
-    const { domain: domainName, path: targetPath } = req.query as ReqQuery;
+    const {
+      citoid,
+      debug,
+      format,
+      sandbox,
+      tests,
+      path: targetPath,
+    } = req.query as ReqQuery;
 
     const options: Options = {
       citoid: citoid === "true" ? true : false,
@@ -114,19 +120,21 @@ app.get(
       options.format === "html" &&
       options.tests &&
       !options.citoid &&
-      targetPath &&
-      targetPath[0] === "/"
+      (req.query.url || (targetPath && targetPath[0] === "/"))
     ) {
       let path = "/";
       if (options.debug) path += "debug/";
       if (options.sandbox) path += `sandbox/${options.sandbox}/`;
-      const url = "https://" + domainName + targetPath;
-      path += url;
+      path += req.query.url ?? "https://" + req.query.domainName + targetPath;
       res.redirect(301, path);
       return;
     }
 
-    await handler(req, res, domainName, targetPath, options);
+    if (req.query.domain !== undefined) {
+      await handler(req, res, req.query.domain, targetPath, options);
+    } else {
+      await urlHandler(req, res, req.query.url, options);
+    }
   })
 );
 app.get(
@@ -157,20 +165,13 @@ app.get(
       return;
     }
 
-    try {
-      const { domain: domainName, path: targetPath } = new Webpage(url);
-      await handler(req, res, domainName, targetPath, {
-        citoid: false,
-        debug,
-        format: "html",
-        sandbox: user,
-        tests: true,
-      });
-    } catch {
-      res.status(400);
-      res.send(`${req.t("error.invalidTarget")}: ${url}`);
-      return;
-    }
+    await urlHandler(req, res, url, {
+      citoid: false,
+      debug,
+      format: "html",
+      sandbox: user,
+      tests: true,
+    });
   })
 );
 
@@ -198,6 +199,25 @@ function wrap(
     });
   };
   return wrappedFn;
+}
+
+async function urlHandler(
+  req: Parameters<RequestHandler>[0],
+  res: Parameters<RequestHandler>[1],
+  url: string,
+  options: Options
+) {
+  let domainName, targetPath;
+  try {
+    const target = new Webpage(url);
+    domainName = target.domain;
+    targetPath = target.path;
+  } catch {
+    res.status(400);
+    res.send(`${req.t("error.invalidTarget")}: ${url}`);
+    return;
+  }
+  await handler(req, res, domainName, targetPath, options);
 }
 
 async function handler(
