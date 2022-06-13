@@ -125,7 +125,7 @@ app.get(
       let path = "/";
       if (options.debug) path += "debug/";
       if (options.sandbox) path += `sandbox/${options.sandbox}/`;
-      path += req.query.url ?? "https://" + req.query.domainName + targetPath;
+      path += req.query.url ?? "https://" + req.query.domain + targetPath;
       res.redirect(301, path);
       return;
     }
