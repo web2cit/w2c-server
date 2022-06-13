@@ -245,6 +245,16 @@ async function handler(
     }
   }
 
+  if (options.sandbox) {
+    const user = options.sandbox;
+    // todo: storage root should be given to the Domain constructor (T306553)
+    let storageRoot = domain.templates.storage.root;
+    storageRoot = `User:${user}/` + storageRoot;
+    domain.templates.storage.root = storageRoot;
+    domain.patterns.storage.root = storageRoot;
+    domain.tests.storage.root = storageRoot;
+  }
+
   let configsFetched = false;
   let targetPaths;
   if (targetPath === undefined) {
@@ -284,16 +294,6 @@ async function handler(
       // regardless of whether it is needed or not by one of the translation procedures.
       target.cache.citoid.getData();
     }
-  }
-
-  if (options.sandbox) {
-    const user = options.sandbox;
-    // todo: storage root should be given to the Domain constructor (T306553)
-    let storageRoot = domain.templates.storage.root;
-    storageRoot = `User:${user}/` + storageRoot;
-    domain.templates.storage.root = storageRoot;
-    domain.patterns.storage.root = storageRoot;
-    domain.tests.storage.root = storageRoot;
   }
 
   const targetOutputs = await domain.translate(validTargetPaths, {
