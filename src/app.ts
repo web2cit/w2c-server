@@ -328,6 +328,20 @@ async function handler(
       targetResult.pattern = targetOutput.translation.pattern;
       targetResult.error = targetOutput.translation.error;
 
+      // if applicable, push Citoid citation before Web2Cit citations
+      if (options.citoid) {
+        // todo: add the corresponding translation result too
+        // targetResult.results.push({})
+        try {
+          const citation = (await target.cache.citoid.getData()).citation;
+          targetCitations.push(citation.mediawiki);
+        } catch {
+          console.warn(
+            `Could not get Citoid citation for path "${target.path}"`
+          );
+        }
+      }
+
       for (const templateOutput of targetOutput.translation.outputs) {
         if (templateOutput.template.applicable) {
           if (options.format !== "mediawiki") {
@@ -348,13 +362,6 @@ async function handler(
           domain.templates.currentRevid ?? 0,
           options.tests ? domain.tests.currentRevid ?? 0 : undefined
         );
-      }
-
-      if (options.citoid) {
-        // todo: add the corresponding translation result too
-        // targetResult.results.push({})
-        const citation = (await target.cache.citoid.getData()).citation;
-        targetCitations.push(citation.mediawiki);
       }
     } else {
       targetResult.error = {
