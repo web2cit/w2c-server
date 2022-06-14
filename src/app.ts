@@ -374,13 +374,14 @@ async function handler(
     citations.push(...targetCitations);
   }
 
+  if (citations.length === 0) {
+    // fixes T305166
+    res.status(404);
+    // res.send(req.t("error.noTranslation"));
+    // return;
+  }
+
   if (options.format === "html") {
-    if (citations.length === 0) {
-      // fixes T305166
-      res.status(404);
-      // res.send(req.t("error.noTranslation"));
-      // return;
-    }
     const query: ReqQuery = {
       citoid: options.citoid ? "true" : "false",
       debug: options.debug ? "true" : "false",
