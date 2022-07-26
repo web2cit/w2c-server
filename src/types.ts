@@ -15,6 +15,7 @@ export type TargetResult = {
   href?: string;
   pattern?: string;
   results: TranslationResult[];
+  score: number | undefined;
   error?: Error;
   debug?: DebugJson;
 };
@@ -25,16 +26,17 @@ export type TranslationResult = {
     label?: string;
   };
   fields: TranslationField[];
+  score: number | undefined;
 };
 
 export type TranslationField = {
   name: string;
   output: TranslationOutput;
-  test: TranslationOutput;
+  test: TranslationOutput | undefined;
   score: number | undefined;
 };
 
-export type TranslationOutput = string[] | undefined;
+export type TranslationOutput = string[];
 
 export type CitationResult = {
   url: string;
@@ -156,4 +158,27 @@ export function isReqQuery(query: unknown): query is ReqQuery {
   } else {
     return true;
   }
+}
+
+export interface JsonResponse {
+  info: {
+    apiVersion: string;
+    // undefined if an error prevented from fetching configs
+    config?: {
+      patterns: JsonConfig;
+      templates: JsonConfig;
+      // tests may be undefined if tests were not requested
+      tests?: JsonConfig;
+    };
+  };
+  data?: {
+    targets: TargetResult[];
+    score: number | undefined;
+  };
+  error?: Error;
+}
+
+interface JsonConfig {
+  path: string;
+  revid: number | undefined;
 }

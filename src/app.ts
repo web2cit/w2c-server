@@ -12,6 +12,7 @@ import {
   CitationResult,
   isReqQuery,
   ReqQuery,
+  JsonResponse,
 } from "./types";
 import { INVALID_PATH_ERROR_NAME } from "./errors";
 import { TargetOutput } from "web2cit/dist/domain/domain";
@@ -26,6 +27,8 @@ type Citation = MediaWikiCitation | WebToCitCitation;
 
 const SCHEMAS_PATH =
   "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/";
+
+const API_VERSION = process.env.npm_package_version ?? "";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -82,9 +85,16 @@ app.get(
       res.status(400);
       // todo: consider providing more verbose output
       if (req.query.format === "json" || req.query.format === "mediawiki") {
-        res.json({
-          error: "Invalid query",
-        });
+        const response: JsonResponse = {
+          info: {
+            apiVersion: API_VERSION,
+          },
+          error: {
+            name: "Invalid query",
+            message: `"${req.query}" is not a valid query`,
+          },
+        };
+        res.json(response);
       } else {
         res.send("Invalid query");
       }
@@ -213,8 +223,20 @@ async function urlHandler(
     domainName = target.domain;
     targetPath = target.path;
   } catch {
+    const message = `${req.t("error.invalidTarget")}: ${url}`;
     res.status(400);
-    res.send(`${req.t("error.invalidTarget")}: ${url}`);
+    if (options.format === "json") {
+      const response: JsonResponse = {
+        info: { apiVersion: API_VERSION },
+        error: {
+          name: "Invalid target",
+          message,
+        },
+      };
+      res.json(response);
+    } else {
+      res.send(message);
+    }
     return;
   }
   await handler(req, res, domainName, targetPath, options);
@@ -227,6 +249,13 @@ async function handler(
   targetPath: string | undefined,
   options: Options
 ) {
+  // initialize json response
+  const jsonResponse: JsonResponse = {
+    info: {
+      apiVersion: API_VERSION,
+    },
+  };
+
   let domain: Domain;
   try {
     domain = new Domain(domainName);
@@ -237,7 +266,11 @@ async function handler(
       if (options.format === "html") {
         res.send(message);
       } else {
-        res.json({ error: message });
+        jsonResponse.error = {
+          name: "Invalid domain",
+          message: message,
+        };
+        res.json(jsonResponse);
       }
       return;
     } else {
@@ -266,12 +299,6 @@ async function handler(
     targetPaths = [targetPath];
   }
 
-  if (targetPaths.length === 0) {
-    res.status(404);
-    res.send(req.t("error.noTargetPaths"));
-    return;
-  }
-
   // ignore invalid target paths
   const validTargetPaths = targetPaths.reduce((valid: string[], targetPath) => {
     try {
@@ -285,6 +312,46 @@ async function handler(
 
   if (!configsFetched && validTargetPaths.length) {
     await domain.fetchAndLoadConfigs();
+    configsFetched = true;
+  }
+
+  if (configsFetched) {
+    // update json response
+    jsonResponse.info.config = {
+      patterns: {
+        path: domain.patterns.title,
+        revid: domain.patterns.currentRevid,
+      },
+      templates: {
+        path: domain.templates.title,
+        revid: domain.templates.currentRevid,
+      },
+      tests: options.tests
+        ? {
+            path: domain.tests.title,
+            revid: domain.tests.currentRevid,
+          }
+        : undefined,
+    };
+  }
+
+  if (targetPaths.length === 0) {
+    const message = req.t("error.noTargetPaths");
+    res.status(404);
+    if (options.format === "json") {
+      jsonResponse.data = {
+        targets: [],
+        score: undefined,
+      };
+      jsonResponse.error = {
+        name: "No targets",
+        message,
+      };
+      res.json(jsonResponse);
+    } else {
+      res.send(message);
+    }
+    return;
   }
 
   if (options.citoid) {
@@ -314,6 +381,7 @@ async function handler(
     const targetResult: TargetResult = {
       path: targetPath,
       results: [],
+      score: undefined,
     };
     const targetCitations: typeof citations = [];
 
@@ -355,6 +423,10 @@ async function handler(
           targetCitations.push(citation);
         }
       }
+
+      // use score of first applicable result as target score
+      targetResult.score = targetResult.results[0]?.score;
+
       if (options.debug) {
         targetResult["debug"] = makeDebugJson(
           targetOutput,
@@ -404,8 +476,24 @@ async function handler(
   } else if (options.format === "mediawiki") {
     res.json(citations as Citation[]);
   } else if (options.format === "json") {
+    let score;
+    if (options.tests) {
+      let scoreCount = 0;
+      let scoreSum = 0;
+      results.forEach((result) => {
+        const score = result.score;
+        if (score !== undefined) {
+          scoreCount += 1;
+          scoreSum += score;
+        }
+      });
+      if (scoreCount > 0) {
+        score = scoreSum / scoreCount;
+      }
+    }
+
     // make error objects stringify-able
-    const json = JSON.parse(
+    const targets: TargetResult[] = JSON.parse(
       JSON.stringify(results, (key, value) => {
         if (value instanceof Error) {
           return {
@@ -417,21 +505,21 @@ async function handler(
         }
       })
     );
-    res.json(json);
+
+    jsonResponse.data = {
+      targets,
+      score,
+    };
+    res.json(jsonResponse);
   }
 }
 
 function makeTranslationResult(
   templateOutput: TargetOutput["translation"]["outputs"][number]
 ): TranslationResult {
-  const translationResult: TranslationResult = {
-    template: {
-      path: templateOutput.template.path,
-      // todo: w2c-core should output template label
-      label: undefined,
-    },
-    fields: [],
-  };
+  const fields: TranslationResult["fields"] = [];
+  let scoreCount = 0;
+  let scoreSum = 0;
   const fieldNames = Array.from(
     new Set([
       // valid fields from template output
@@ -449,13 +537,32 @@ function makeTranslationResult(
     const testField = templateOutput.scores.fields.filter(
       (field) => field.fieldname === fieldName
     )[0];
-    translationResult.fields.push({
+
+    const score = testField && testField.score;
+    if (score !== undefined) {
+      scoreCount += 1;
+      scoreSum += score;
+    }
+
+    fields.push({
       name: fieldName,
-      output: outputField && outputField.output,
+      // undefined field output equals empty output (T313757)
+      output: outputField?.output ?? [],
       test: testField && testField.goal,
-      score: testField && testField.score,
+      score,
     });
   }
+  const translationResult: TranslationResult = {
+    template: {
+      path: templateOutput.template.path,
+      // todo: w2c-core should output template label
+      label: undefined,
+    },
+    fields,
+    // todo: w2c-core should output result's average score
+    score: scoreCount > 0 ? scoreSum / scoreCount : undefined,
+  };
+
   return translationResult;
 }
 

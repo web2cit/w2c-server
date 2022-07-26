@@ -3,7 +3,7 @@ import ResultsPageContext from "./ResultsPageContext";
 import { TranslationOutput } from "../types";
 
 interface OutputCellProps {
-  output: TranslationOutput;
+  output: TranslationOutput | undefined;
 }
 
 export default function (props: OutputCellProps) {
