@@ -256,9 +256,15 @@ async function handler(
     },
   };
 
+  const userAgentPrefix =
+    "web2cit-server/" +
+    API_VERSION +
+    " (https://phabricator.wikimedia.org/tag/web2cit-server/)";
   let domain: Domain;
   try {
-    domain = new Domain(domainName);
+    domain = new Domain(domainName, {
+      userAgentPrefix,
+    });
   } catch (error) {
     if (error instanceof Error) {
       res.status(400);
