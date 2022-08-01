@@ -1,6 +1,6 @@
 {
   "name": "web2cit-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Web2Cit translation server",
   "main": "dist/app.js",
   "scripts": {
@@ -48,6 +48,6 @@
     "i18next-http-middleware": "^3.2.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "web2cit": "file:../w2c-core"
+    "web2cit": "^1.0.0"
   }
 }
