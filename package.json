@@ -1,6 +1,6 @@
 {
   "name": "web2cit-server",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Web2Cit translation server",
   "main": "dist/app.js",
   "scripts": {
