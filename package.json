@@ -1,6 +1,6 @@
 {
   "name": "web2cit-server",
-  "version": "1.0.3",
+  "version": "1.1.0-alpha.0",
   "description": "Web2Cit translation server",
   "main": "dist/app.js",
   "scripts": {
@@ -21,7 +21,8 @@
   },
   "homepage": "https://meta.wikimedia.org/wiki/Web2Cit",
   "engines": {
-    "node": ">= 12"
+    "node": ">= 12",
+    "npm": ">= 7"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
