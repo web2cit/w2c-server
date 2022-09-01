@@ -27,6 +27,11 @@
                 // "--preserve-symlinks"
             ],
             "runtimeExecutable": "npm",
+            // this won't work either if the first command in npm run dev is
+            // not the node command (e.g., npm run build && node...)
+            // "env": {
+            //     "NODE_PRESERVE_SYMLINKS": "1"
+            // },
             "skipFiles": [
                 "<node_internals>/**"
             ],
