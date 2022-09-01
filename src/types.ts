@@ -112,6 +112,7 @@ export type EditorParams = {
 };
 
 interface QueryOptions {
+  [key: string]: string | undefined;
   citoid?: "true" | "false";
   debug?: "true" | "false";
   format?: "html" | "json" | "mediawiki";

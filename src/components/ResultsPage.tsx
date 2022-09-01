@@ -13,11 +13,25 @@ export interface ResultsPageProps {
 
 export default function (props: ResultsPageProps) {
   const { t, debug, query } = useContext(ResultsPageContext);
+  const params: Record<string, string> = {};
+  // ignore undefined query values
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined) {
+      params[key] = value;
+    }
+  });
   const debugHref =
-    "/translate?" + new URLSearchParams({ ...query, debug: "true" }).toString();
+    "/translate?" +
+    new URLSearchParams({
+      ...params,
+      debug: "true",
+    }).toString();
   const nodebugHref =
     "/translate?" +
-    new URLSearchParams({ ...query, debug: "false" }).toString();
+    new URLSearchParams({
+      ...params,
+      debug: "false",
+    }).toString();
   const debugEnable = `<a href=${debugHref}>${t("debug.enable")}</a>`;
   const debugDisable = `<a href=${nodebugHref}>${t("debug.disable")}</a>`;
   return (
