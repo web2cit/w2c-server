@@ -20,7 +20,11 @@
             "runtimeArgs": [
                 "run-script",
                 "dev",
-                "--preserve-symlinks"
+                // --preserve-symlinks won't work here, as it will be passed
+                // to npm instead of to node
+                // consider adding to corresponding script command in
+                // package.json instead
+                // "--preserve-symlinks"
             ],
             "runtimeExecutable": "npm",
             "skipFiles": [
