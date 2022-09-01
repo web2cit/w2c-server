@@ -22,6 +22,9 @@ import {
   MediaWikiCitation,
   WebToCitCitation,
 } from "web2cit/dist/citation/citationTypes";
+// may an old version of jsdom cause trouble?
+// shall we use toolforge's node 16 to install a newer version of jsdom?
+import { JSDOM } from "jsdom";
 
 type Citation = MediaWikiCitation | WebToCitCitation;
 
@@ -262,9 +265,11 @@ async function handler(
     " (https://phabricator.wikimedia.org/tag/web2cit-server/)";
   let domain: Domain;
   try {
-    domain = new Domain(domainName, {
+    const window = new JSDOM().window;
+    domain = new Domain(domainName, window, {
       userAgentPrefix,
     });
+    // fixme?: do we need to "close" the JSDOM window eventually?
   } catch (error) {
     if (error instanceof Error) {
       res.status(400);
