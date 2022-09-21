@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Do not support node < 16 ([T316937]).
 
-## [1.1.0-alpha.1] - 2022-09-20
+## [1.1.0-alpha.1] - 2022-09-21
 
 ### Added
 
