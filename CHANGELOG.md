@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--
+### Changed
+
+- Do not support node < 16 ([T316937]).
 
 ## [1.1.0-alpha.1] - 2022-09-20
 
@@ -59,3 +61,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.2]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.0.1...v1.0.2
 [1.0.1]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.0.0...v1.0.1
 [1.0.0]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/tags/v1.0.0
+
+[T316937]: https://phabricator.wikimedia.org/T316937
