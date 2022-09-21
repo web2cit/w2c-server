@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Simplify debugging from vscode.
+- Update `web2cit` to v2.0.0-alpha.1.
 
 ## [1.1.0-alpha.0] - 2022-08-31
 
