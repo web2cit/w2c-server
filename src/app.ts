@@ -28,9 +28,6 @@ import { JSDOM } from "jsdom";
 
 type Citation = MediaWikiCitation | WebToCitCitation;
 
-const SCHEMAS_PATH =
-  "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/";
-
 const API_VERSION = process.env.npm_package_version ?? "";
 
 const app = express();
@@ -481,7 +478,8 @@ async function handler(
       options.debug,
       query,
       domain,
-      req.t
+      req.t,
+      req.hostname + "/schema/"
     );
     res.send(html);
   } else if (options.format === "mediawiki") {
@@ -626,7 +624,8 @@ function makeHtmlResponse(
   debug: boolean,
   query: ReqQuery,
   domain: Domain,
-  t: TFunction
+  t: TFunction,
+  schemas: string
 ): string {
   // pattern may be undefined if:
   // * target translated with forced templates, or
@@ -682,9 +681,9 @@ function makeHtmlResponse(
         },
         debug,
         schemas: {
-          patterns: SCHEMAS_PATH + "patterns.schema.json",
-          templates: SCHEMAS_PATH + "templates.schema.json",
-          tests: SCHEMAS_PATH + "tests.schema.json",
+          patterns: schemas + "patterns.schema.json",
+          templates: schemas + "templates.schema.json",
+          tests: schemas + "tests.schema.json",
         },
       },
     })
