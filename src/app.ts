@@ -14,7 +14,7 @@ import {
   ReqQuery,
   JsonResponse,
 } from "./types";
-import { INVALID_PATH_ERROR_NAME } from "./errors";
+import { INVALID_PATH_ERROR_NAME, NoApplicableTemplateError } from "./errors";
 import { TargetOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
 import HomePage from "./components/HomePage";
@@ -421,8 +421,10 @@ async function handler(
         }
       }
 
+      let hasApplicableTemplate = false;
       for (const templateOutput of targetOutput.translation.outputs) {
         if (templateOutput.template.applicable) {
+          hasApplicableTemplate = true;
           if (options.format !== "mediawiki") {
             // mediawiki format includes citations only
             // do not make translation results unnecessarily
@@ -433,6 +435,13 @@ async function handler(
           const citation = templateOutput.citation!;
           targetCitations.push(citation);
         }
+      }
+
+      // if no applicable translation template has been found for the target
+      // webpage and no other translation error has been thrown, set a
+      // NonApplicableTemplateError
+      if (!hasApplicableTemplate) {
+        targetResult.error ??= new NoApplicableTemplateError(targetPath);
       }
 
       // use score of first applicable result as target score

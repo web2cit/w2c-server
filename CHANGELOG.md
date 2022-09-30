@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- An error is shown in cases where no applicable translation template has been
+  found for a target webpage.
+
 ### Changed
 
 - Remove error handling no longer needed after resolving w2c-core's [T305163].
