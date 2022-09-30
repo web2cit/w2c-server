@@ -16,7 +16,6 @@
   "switch.main": "Switch to main configuration",
   "switch.sandbox": "Switch to sandbox configuration",
   "switch.username": "Username",
-  "catchall": "catch-all",
   "pattern_labelled": "Translation subgroup for \"{{label}}\" URL path pattern:",
   "pattern_unlabelled": "Translation subgroup for URL path pattern:",
   "pattern_undefined": "Translation subgroup for undefined URL path pattern",
@@ -49,6 +48,5 @@
   "error.noTargetPaths": "Target path unspecified, and none available from template or test configurations",
   "error.domain": "Web2Cit failed to create the Domain object",
   "error.noTranslation": "No applicable translation template found for target webpage",
-  "error.targetTranslation": "Target translation error",
-  "tests.unsupported": "Translation tests are not supported yet"
+  "error.targetTranslation": "Target translation error"
 }
