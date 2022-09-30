@@ -48,8 +48,6 @@
   "error.invalidTarget": "Invalid target URL",
   "error.noTargetPaths": "Target path unspecified, and none available from template or test configurations",
   "error.domain": "Web2Cit failed to create the Domain object",
-  "error.external": "Failed to fetch one of the external resources required to translate the target URL",
-  "error.external.details": "{{- url}} (Error {{code}}: {{message}})",
   "error.noTranslation": "No applicable translation template found for target webpage",
   "error.targetTranslation": "Target translation error",
   "tests.unsupported": "Translation tests are not supported yet"

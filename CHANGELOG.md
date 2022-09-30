@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--
+### Changed
+
+- Remove error handling no longer needed after resolving w2c-core's [T305163].
 
 ## [1.1.0-alpha.3] - 2022-09-22
 
@@ -75,3 +77,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.0]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/tags/v1.0.0
 
 [T316937]: https://phabricator.wikimedia.org/T316937
+[T305163]: https://phabricator.wikimedia.org/T305163

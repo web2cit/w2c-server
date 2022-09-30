@@ -48,8 +48,6 @@
   "error.invalidTarget": "Objetivo de traducción inválido",
   "error.noTargetPaths": "Ruta objetivo sin especificar, y ninguna disponible en las configuraciones de plantillas o de pruebas de traducción",
   "error.domain": "Web2Cit no pudo crear el objeto Dominio",
-  "error.external": "No fue posible obtener uno de los recursos externos necesarios para la traducción",
-  "error.external.details": "{{url}} (Error {{code}}: {{message}})",
   "error.noTranslation": "No se encontraron plantillas de traducción aplicables para el objetivo de traducción",
   "error.targetTranslation": "Error de traducción",
   "tests.unsupported": "Las pruebas de traducción no están soportadas aún"
