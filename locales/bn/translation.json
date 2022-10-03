@@ -1,0 +1,22 @@
+{
+	"@metadata": {
+		"authors": [
+			"আফতাবুজ্জামান"
+		]
+	},
+	"home.config.main": "প্রধান",
+	"home.config.sandbox": "খেলাঘর",
+	"home.config.user": "ব্যবহারকারী নাম",
+	"home.debug": "ডিবাগিং তথ্য দেখান",
+	"title": "অনুবাদের সারাংশ",
+	"switch.username": "ব্যবহারকারী নাম",
+	"edit": "সম্পাদনা করুন",
+	"debug": "ডিবাগিং তথ্য",
+	"field.itemType": "আইটেমের ধরন",
+	"field.title": "শিরোনাম",
+	"field.authorLast": "লেখকের শেষ বা পুরো নাম",
+	"field.authorFirst": "লেখকের প্রথম নাম",
+	"field.date": "প্রকাশনার তারিখ",
+	"field.language": "ভাষা",
+	"error.external.details": "{{- url}} (ত্রুটি {{code}}: {{message}})"
+}
