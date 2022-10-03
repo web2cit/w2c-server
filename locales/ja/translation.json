@@ -1,0 +1,22 @@
+{
+	"@metadata": {
+		"authors": [
+			"MathXplore"
+		]
+	},
+	"web2cit": "Web2Cit",
+	"home.target": "ターゲット URL",
+	"home.config.main": "メイン",
+	"home.config.sandbox": "サンドボックス",
+	"home.config.user": "利用者名",
+	"title": "翻訳の要約",
+	"switch.switch": "スイッチ",
+	"switch.username": "利用者名",
+	"edit": "編集",
+	"fieldHeader": "フィールド",
+	"scoreHeader": "点数",
+	"nonApplicable": "該当なし",
+	"field.itemType": "アイテムの種類",
+	"field.title": "タイトル",
+	"field.language": "言語"
+}
