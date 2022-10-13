@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - An error is shown in cases where no applicable translation template has been
   found for a target webpage.
+- Follow config file redirections.
 
 ### Changed
 
