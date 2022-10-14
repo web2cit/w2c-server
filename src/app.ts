@@ -685,8 +685,7 @@ function makeHtmlResponse(
           filenames: {
             templates: domain.templates.storage.filename,
             patterns: domain.patterns.storage.filename,
-            // tests: domain.tests.storage.filename,
-            tests: "tests.json",
+            tests: domain.tests.storage.filename,
           },
         },
         debug,
