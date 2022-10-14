@@ -46,6 +46,7 @@
       async function getStartval(instance, title) {
         const apiParams = {
           action: "query",
+          redirects: 1,
           format: "json",
           prop: "revisions",
           titles: title,
@@ -60,6 +61,11 @@
         const response = await fetch(request);
         const jsonResponse = await response.json();
         const page = jsonResponse.query.pages[0];
+        if (title !== page.title) {
+          console.info(`Page ${title} redirects to ${page.title}`);
+          // if redirected, set save as field to redirection title
+          document.querySelector("#title").value = page.title;
+        }
         if (page.missing) {
           throw new Error(`${title} does not exist`);
           return;
