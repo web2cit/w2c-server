@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - An error is shown in cases where no applicable translation template has been
   found for a target webpage.
 - Follow config file redirections.
+- Serve JSON schema files from server ([T318352]).
 
 ### Changed
 
@@ -91,5 +92,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.1]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.0.0...v1.0.1
 [1.0.0]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/tags/v1.0.0
 
+[T318352]: https://phabricator.wikimedia.org/T318352
 [T316937]: https://phabricator.wikimedia.org/T316937
 [T305163]: https://phabricator.wikimedia.org/T305163

@@ -28,6 +28,8 @@ import { JSDOM } from "jsdom";
 
 type Citation = MediaWikiCitation | WebToCitCitation;
 
+const SCHEMAS_PATH = "/schema/";
+
 const API_VERSION = process.env.npm_package_version ?? "";
 
 const app = express();
@@ -64,6 +66,14 @@ app.use((req, res, next) => {
 
 app.use(express.static("public"));
 app.use(express.static("dist/public"));
+// serve w2c-core json schema files from w2c-server (T318352)
+app.use(
+  SCHEMAS_PATH,
+  express.static("node_modules/web2cit/schema", {
+    fallthrough: false,
+    index: false,
+  })
+);
 
 app.get("/", (req, res) => {
   const render = renderToStaticMarkup(HomePage({ t: req.t }));
@@ -481,6 +491,9 @@ async function handler(
     if (targetPath !== undefined) query.path = targetPath;
     if (options.sandbox !== undefined) query.sandbox = options.sandbox;
 
+    const schemaPath =
+      req.protocol + "://" + (req.headers.host ?? req.hostname) + SCHEMAS_PATH;
+
     const html = makeHtmlResponse(
       results,
       citations,
@@ -488,7 +501,7 @@ async function handler(
       query,
       domain,
       req.t,
-      req.hostname + "/schema/"
+      schemaPath
     );
     res.send(html);
   } else if (options.format === "mediawiki") {
@@ -634,7 +647,7 @@ function makeHtmlResponse(
   query: ReqQuery,
   domain: Domain,
   t: TFunction,
-  schemas: string
+  schemaPath: string
 ): string {
   // pattern may be undefined if:
   // * target translated with forced templates, or
@@ -689,9 +702,9 @@ function makeHtmlResponse(
         },
         debug,
         schemas: {
-          patterns: schemas + "patterns.schema.json",
-          templates: schemas + "templates.schema.json",
-          tests: schemas + "tests.schema.json",
+          patterns: schemaPath + "patterns.schema.json",
+          templates: schemaPath + "templates.schema.json",
+          tests: schemaPath + "tests.schema.json",
         },
       },
     })
