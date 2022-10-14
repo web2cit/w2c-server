@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove error handling no longer needed after resolving w2c-core's [T305163].
 - Remove unnecessary translation messages.
+- Update `web2cit` to v2.0.0-beta.0.
 
 ## [1.1.0-alpha.3] - 2022-09-22
 
