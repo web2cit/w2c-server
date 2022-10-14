@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+-
+
+## [1.1.0-beta.0] - 2022-10-14
+
 ### Added
 
 - An error is shown in cases where no applicable translation template has been
@@ -82,7 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First version to be deployed at https://web2cit.toolforge.org/.
 
 
-[unreleased]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-alpha.3...v1.1
+[unreleased]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-beta.0...v1.1
+[1.1.0-beta.0]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-alpha.3...v1.1.0-beta.0
 [1.1.0-alpha.3]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-alpha.2...v1.1.0-alpha.3
 [1.1.0-alpha.2]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-alpha.1...v1.1.0-alpha.2
 [1.1.0-alpha.1]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-alpha.0...v1.1.0-alpha.1
