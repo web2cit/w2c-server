@@ -35,6 +35,12 @@ const API_VERSION = process.env.npm_package_version ?? "";
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Toolforge uses an Nginx reverse proxy; setting the "trust proxy" setting to
+// true makes req.protocol below consider the X-Forwarded-Proto header.
+// See https://expressjs.com/en/api.html#trust.proxy.options.table, and
+// https://www.nginx.com/resources/wiki/start/topics/examples/forwarded/
+app.set("trust proxy", true);
+
 i18next
   .use(Backend)
   // .use(languageDetector)
@@ -491,6 +497,10 @@ async function handler(
     if (targetPath !== undefined) query.path = targetPath;
     if (options.sandbox !== undefined) query.sandbox = options.sandbox;
 
+    // Try req.headers.host before req.hostname because req.hostname does not
+    // include the port.
+    // Note req.headers.host won't be affected by the "trust proxy" setting
+    // above.
     const schemaPath =
       req.protocol + "://" + (req.headers.host ?? req.hostname) + SCHEMAS_PATH;
 

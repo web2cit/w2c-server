@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--
+### Fixed
+
+- Configure Express to run behind Toolforge's reverse proxy.
 
 ## [1.1.0-beta.0] - 2022-10-14
 
