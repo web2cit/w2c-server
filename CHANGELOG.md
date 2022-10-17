@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update `web2cit` to v2.0.0-beta.1.
+
 ### Fixed
 
 - Configure Express to run behind Toolforge's reverse proxy.
