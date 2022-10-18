@@ -359,25 +359,6 @@ async function handler(
     };
   }
 
-  if (targetPaths.length === 0) {
-    const message = req.t("error.noTargetPaths");
-    res.status(404);
-    if (options.format === "json") {
-      jsonResponse.data = {
-        targets: [],
-        score: undefined,
-      };
-      jsonResponse.error = {
-        name: "No targets",
-        message,
-      };
-      res.json(jsonResponse);
-    } else {
-      res.send(message);
-    }
-    return;
-  }
-
   if (options.citoid) {
     for (const targetPath of validTargetPaths) {
       const target = domain.webpages.getWebpage(targetPath);

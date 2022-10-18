@@ -49,13 +49,19 @@ export default function (props: ResultsPageProps) {
         <ResultsHeader domain={props.domain} headingLevel={1} />
         <hr />
         <main>
-          {props.patterns.map((pattern) => (
-            <PatternSection
-              pattern={pattern}
-              headingLevel={2}
-              key={pattern.pattern}
-            />
-          ))}
+          {props.patterns.length ? (
+            props.patterns.map((pattern) => (
+              <PatternSection
+                pattern={pattern}
+                headingLevel={2}
+                key={pattern.pattern}
+              />
+            ))
+          ) : (
+            <div className="translation-error">
+              <p>{t("error.noTargetPaths")}</p>
+            </div>
+          )}
         </main>
         <hr />
         <footer>

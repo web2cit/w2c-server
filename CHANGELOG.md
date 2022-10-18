@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update `web2cit` to v2.0.0-beta.1.
+- Do not return an error if no target paths specified or none available from
+  config files ([T321002]).
 
 ### Fixed
 
@@ -104,6 +106,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.1]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.0.0...v1.0.1
 [1.0.0]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/tags/v1.0.0
 
+[T321002]: https://phabricator.wikimedia.org/T321002
 [T318352]: https://phabricator.wikimedia.org/T318352
 [T316937]: https://phabricator.wikimedia.org/T316937
 [T305163]: https://phabricator.wikimedia.org/T305163
