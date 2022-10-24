@@ -1,0 +1,28 @@
+{
+	"@metadata": {
+		"authors": [
+			"Tajamul9"
+		]
+	},
+	"home.extract": "نؠبر کڈُن",
+	"home.config.main": "اَہَم",
+	"home.config.user": "صٲرِف ناو",
+	"switch.switch": "پِھرُن",
+	"switch.username": "صٲرِف ناو",
+	"catchall": "سورٕے-رَٹُن",
+	"edit": "اؠڈِٹ",
+	"templatePath": "فَرما وَتھ:",
+	"fieldHeader": "مٲدان",
+	"outputHeader": "ترجُمہٕ کرنُک دَین",
+	"testHeader": "وۄمیدوار دین",
+	"scoreHeader": "سِکور",
+	"nonApplicable": "n/a",
+	"field.title": "ناو/سرنامہٕ",
+	"field.date": "شایعہ سپدَنُک تٲریٖخ",
+	"field.publishedIn": "شایع سپُد",
+	"field.publishedBy": "شایع سپُدمُت",
+	"field.language": "زَبان",
+	"error.external.details": "{{- url}} (خرٲبی {{code}}: {{message}}",
+	"error.targetTranslation": "ترجُمہٕ خرٲبی ہِیوٚنٛد مَقصد",
+	"tests.unsupported": "ترجُمہٕ ٹیسٹہٕ چِھنہٕ وُنہِ چلان کینٛہہ"
+}
