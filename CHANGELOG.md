@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add favicon.
+- Add Hindi, Korean, Kashmiri (Arabic script), Rakhine, Turkish and Simplified
+  Chinese translations from Translatewiki.
 
 ### Changed
 
 - Update `web2cit` to v2.0.0.
+- Update Tagalog translations from Translatewiki.
 
 ## [1.1.0-beta.1] - 2022-10-18
 
