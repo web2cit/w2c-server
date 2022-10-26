@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add favicon.
 
+### Changed
+
+- Update `web2cit` to v2.0.0.
+
 ## [1.1.0-beta.1] - 2022-10-18
 
 ### Changed
