@@ -14,7 +14,7 @@ import {
   ReqQuery,
   JsonResponse,
 } from "./types";
-import { INVALID_PATH_ERROR_NAME } from "./errors";
+import { INVALID_PATH_ERROR_NAME, NoApplicableTemplateError } from "./errors";
 import { TargetOutput } from "web2cit/dist/domain/domain";
 import { makeDebugJson } from "./debug";
 import HomePage from "./components/HomePage";
@@ -22,16 +22,24 @@ import {
   MediaWikiCitation,
   WebToCitCitation,
 } from "web2cit/dist/citation/citationTypes";
+// may an old version of jsdom cause trouble?
+// shall we use toolforge's node 16 to install a newer version of jsdom?
+import { JSDOM } from "jsdom";
 
 type Citation = MediaWikiCitation | WebToCitCitation;
 
-const SCHEMAS_PATH =
-  "https://raw.githubusercontent.com/web2cit/w2c-core/main/schema/";
+const SCHEMAS_PATH = "/schema/";
 
 const API_VERSION = process.env.npm_package_version ?? "";
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Toolforge uses an Nginx reverse proxy; setting the "trust proxy" setting to
+// true makes req.protocol below consider the X-Forwarded-Proto header.
+// See https://expressjs.com/en/api.html#trust.proxy.options.table, and
+// https://www.nginx.com/resources/wiki/start/topics/examples/forwarded/
+app.set("trust proxy", true);
 
 i18next
   .use(Backend)
@@ -64,6 +72,14 @@ app.use((req, res, next) => {
 
 app.use(express.static("public"));
 app.use(express.static("dist/public"));
+// serve w2c-core json schema files from w2c-server (T318352)
+app.use(
+  SCHEMAS_PATH,
+  express.static("node_modules/web2cit/schema", {
+    fallthrough: false,
+    index: false,
+  })
+);
 
 app.get("/", (req, res) => {
   const render = renderToStaticMarkup(HomePage({ t: req.t }));
@@ -262,9 +278,11 @@ async function handler(
     " (https://phabricator.wikimedia.org/tag/web2cit-server/)";
   let domain: Domain;
   try {
-    domain = new Domain(domainName, {
+    const window = new JSDOM().window;
+    domain = new Domain(domainName, window, {
       userAgentPrefix,
     });
+    // fixme?: do we need to "close" the JSDOM window eventually?
   } catch (error) {
     if (error instanceof Error) {
       res.status(400);
@@ -341,25 +359,6 @@ async function handler(
     };
   }
 
-  if (targetPaths.length === 0) {
-    const message = req.t("error.noTargetPaths");
-    res.status(404);
-    if (options.format === "json") {
-      jsonResponse.data = {
-        targets: [],
-        score: undefined,
-      };
-      jsonResponse.error = {
-        name: "No targets",
-        message,
-      };
-      res.json(jsonResponse);
-    } else {
-      res.send(message);
-    }
-    return;
-  }
-
   if (options.citoid) {
     for (const targetPath of validTargetPaths) {
       const target = domain.webpages.getWebpage(targetPath);
@@ -416,8 +415,10 @@ async function handler(
         }
       }
 
+      let hasApplicableTemplate = false;
       for (const templateOutput of targetOutput.translation.outputs) {
         if (templateOutput.template.applicable) {
+          hasApplicableTemplate = true;
           if (options.format !== "mediawiki") {
             // mediawiki format includes citations only
             // do not make translation results unnecessarily
@@ -428,6 +429,13 @@ async function handler(
           const citation = templateOutput.citation!;
           targetCitations.push(citation);
         }
+      }
+
+      // if no applicable translation template has been found for the target
+      // webpage and no other translation error has been thrown, set a
+      // NonApplicableTemplateError
+      if (!hasApplicableTemplate) {
+        targetResult.error ??= new NoApplicableTemplateError(targetPath);
       }
 
       // use score of first applicable result as target score
@@ -470,13 +478,21 @@ async function handler(
     if (targetPath !== undefined) query.path = targetPath;
     if (options.sandbox !== undefined) query.sandbox = options.sandbox;
 
+    // Try req.headers.host before req.hostname because req.hostname does not
+    // include the port.
+    // Note req.headers.host won't be affected by the "trust proxy" setting
+    // above.
+    const schemaPath =
+      req.protocol + "://" + (req.headers.host ?? req.hostname) + SCHEMAS_PATH;
+
     const html = makeHtmlResponse(
       results,
       citations,
       options.debug,
       query,
       domain,
-      req.t
+      req.t,
+      schemaPath
     );
     res.send(html);
   } else if (options.format === "mediawiki") {
@@ -621,7 +637,8 @@ function makeHtmlResponse(
   debug: boolean,
   query: ReqQuery,
   domain: Domain,
-  t: TFunction
+  t: TFunction,
+  schemaPath: string
 ): string {
   // pattern may be undefined if:
   // * target translated with forced templates, or
@@ -671,15 +688,14 @@ function makeHtmlResponse(
           filenames: {
             templates: domain.templates.storage.filename,
             patterns: domain.patterns.storage.filename,
-            // tests: domain.tests.storage.filename,
-            tests: "tests.json",
+            tests: domain.tests.storage.filename,
           },
         },
         debug,
         schemas: {
-          patterns: SCHEMAS_PATH + "patterns.schema.json",
-          templates: SCHEMAS_PATH + "templates.schema.json",
-          tests: SCHEMAS_PATH + "tests.schema.json",
+          patterns: schemaPath + "patterns.schema.json",
+          templates: schemaPath + "templates.schema.json",
+          tests: schemaPath + "tests.schema.json",
         },
       },
     })
