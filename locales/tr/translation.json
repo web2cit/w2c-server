@@ -1,0 +1,41 @@
+{
+	"@metadata": {
+		"authors": [
+			"Hedda"
+		]
+	},
+	"web2cit": "Web2Cit",
+	"home.subheading": "İş birliğine dayalı otomatik meta-veri çıkarma",
+	"home.target": "Hedef URL",
+	"home.config": "{{choice}} yapılandırmasını kullan",
+	"home.config.main": "Ana",
+	"home.config.sandbox": "Deneme tahtası",
+	"home.config.user": "Kullanıcı adı",
+	"home.debug": "Hata ayıklama bilgilerini göster",
+	"title": "Çeviri özeti",
+	"header": "Alan adı için çeviri özeti:",
+	"switch.switch": "Değiştir",
+	"switch.username": "Kullanıcı adı",
+	"edit": "düzenle",
+	"target": "Hedef için çeviri sonuçları:",
+	"templatePath": "Şablon yolu:",
+	"fieldHeader": "Alan",
+	"outputHeader": "Çeviri çıktısı",
+	"testHeader": "Beklenen çıktı",
+	"nonApplicable": "bilinmiyor",
+	"debug": "Hata ayıklama bilgileri",
+	"debug.enable": "Hata ayıklamayı etkinleştir",
+	"debug.disable": "Hata ayıklamayı devre dışı bırak",
+	"field.itemType": "Öge türü",
+	"field.title": "Başlık",
+	"field.authorLast": "Yazar soyadı veya tam adı",
+	"field.authorFirst": "Yazarın ilk adı",
+	"field.date": "Yayın tarihi",
+	"field.publishedIn": "Yayımlanan yer",
+	"field.publishedBy": "Yayımlanan",
+	"field.language": "Dil",
+	"error.noTarget": "Bir hedef URL belirtin",
+	"error.invalidTarget": "Geçersiz hedef URL",
+	"error.targetTranslation": "Hedef çeviri hatası",
+	"tests.unsupported": "Çeviri testleri henüz desteklenmiyor"
+}

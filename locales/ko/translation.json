@@ -1,0 +1,24 @@
+{
+	"@metadata": {
+		"authors": [
+			"Ykhwong"
+		]
+	},
+	"home.config.sandbox": "연습장",
+	"home.debug": "디버깅 정보 표시",
+	"switch.switch": "전환",
+	"switch.sandbox": "연습장 구성으로 전환",
+	"switch.username": "사용자 이름",
+	"pattern_undefined": "지정되지 않은 URL 경로 패턴에 대한 번역 하위 그룹",
+	"edit": "편집",
+	"outputHeader": "번역 출력",
+	"testHeader": "예상 출력",
+	"nonApplicable": "해당 없음",
+	"debug": "디버깅 정보",
+	"debug.disable": "디버깅 비활성화",
+	"field.itemType": "항목 유형",
+	"field.publishedBy": "게시자",
+	"field.language": "언어",
+	"error.noTarget": "대상 URL을 지정하세요",
+	"error.targetTranslation": "대상 번역 오류"
+}

@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"GinawaSaHapon"
+			"GinawaSaHapon",
+			"Jojit fb"
 		]
 	},
 	"web2cit": "Web2Cit",
@@ -25,7 +26,7 @@
 	"pattern_labelled": "Subgrupo ng salin para sa patttern ng URL path na \"{{label}}\":",
 	"pattern_unlabelled": "Subgrupo ng salin para sa pattern ng URL path:",
 	"pattern_undefined": "Subgrupo ng salin para sa di tinukoy na pattern ng URL path",
-	"edit": "i-edit",
+	"edit": "baguhin",
 	"target": "Mga resulta ng salin para sa target:",
 	"template_labelled": "Resulta ng salin gamit ang akmang padron #{{index}}, \"{{label}}\"",
 	"template_unlabelled": "Resulta ng salin gamit ang akmang padron #{{index}}",
