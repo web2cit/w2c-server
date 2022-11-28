@@ -21,7 +21,6 @@
 	"switch.main": "Preklopi na glavno konfiguracijo",
 	"switch.sandbox": "Preklopi na konfiguracijo peskovnika",
 	"switch.username": "Uporabniško ime",
-	"catchall": "ropotarnica",
 	"pattern_labelled": "Prevajalska podskupina za »{{label}}« vzorec URL-poti:",
 	"pattern_unlabelled": "Prevajalska podskupina za vzorec URL-poti:",
 	"pattern_undefined": "Prevajalska podskupina za nedoločeni vzorec URL-poti",
@@ -53,9 +52,6 @@
 	"error.invalidTarget": "Neveljaven ciljni URL",
 	"error.noTargetPaths": "Ciljna pot ni določena in ni na voljo v konfiguracijah predloge ali preizkusa",
 	"error.domain": "Web2Cit ni uspel ustvariti predmeta Domena",
-	"error.external": "Enega od zunanjih virov, potrebnih za prevod ciljnega URL-ja, ni bilo mogoče pridobiti",
-	"error.external.details": "{{- url}} (napaka {{code}}: {{message}})",
 	"error.noTranslation": "Za ciljno spletno stran ni bilo mogoče najti ustrezne prevajalske predloge",
-	"error.targetTranslation": "Napaka cilja prevoda",
-	"tests.unsupported": "Preizkusi prevodov še niso podprti"
+	"error.targetTranslation": "Napaka cilja prevoda"
 }

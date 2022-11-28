@@ -1,0 +1,24 @@
+{
+	"@metadata": {
+		"authors": [
+			"ThisCarthing"
+		]
+	},
+	"home.target": "Ziel-URL",
+	"home.config.sandbox": "Sandkasten",
+	"home.config.user": "Benutzername",
+	"home.debug": "Debugging-Informationen anzeigen",
+	"title": "Übersetzungszusammenfassung",
+	"switch.main": "Zur Hauptkonfiguration wechseln",
+	"switch.sandbox": "Zur Sandkastenkonfiguration wechseln",
+	"switch.username": "Benutzername",
+	"outputHeader": "Übersetzungsausgabe",
+	"debug": "Debugging-Informationen",
+	"field.title": "Titel",
+	"field.date": "Veröffentlichungsdatum",
+	"field.publishedIn": "Veröffentlicht in",
+	"field.publishedBy": "Veröffentlicht von",
+	"field.language": "Sprache",
+	"error.noTarget": "Ziel-URL angeben",
+	"error.invalidTarget": "Ungültige Ziel-URL"
+}

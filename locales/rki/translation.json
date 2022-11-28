@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Cakkaparla",
 			"ReyLon Mrat",
 			"YaThaWinTha"
 		]
@@ -22,7 +23,6 @@
 	"switch.main": "အဓိကကွန်ဖင်ဂရေးရှင်းကို ပြောင်း",
 	"switch.sandbox": "ပီးပို့ပုံး စနစ်ကိုပြောင်းပါ",
 	"switch.username": "အသုံးပြုလူနာမည်",
-	"catchall": "အားလုံးကိုရရေ",
 	"edit": "တီးဖြတ်",
 	"target": "လုပ်ဆောင်ထားရေ ဘာသာပြန်ရလဒ်:",
 	"template_fallback": "ဖောဘက် တမ်းပလိတ်ကိုသုံးလို့ ရလာရေ ဘာသာပြန်ရလဒ်",
@@ -45,9 +45,6 @@
 	"field.language": "ဘာသာစကား",
 	"error.noTarget": "ရီစူးထားရေURL သတ်မှတ်",
 	"error.invalidTarget": "ရီစူးထားရေ URL မရှိနိင်",
-	"error.external": "ရီစူး URL ကိုဘာသာပြန်ဖို့လိုအပ်တေ အပြင်ပက ရင်းမြစ်တိထဲကတခုကိုယူစွာ မအောင်မြင်",
-	"error.external.details": "{{- url}} (Error {{code}}: {{message}})",
 	"error.noTranslation": "ရွီးထားရေ ဝက်ဆိုက်စာမျက်နှာအတွက် ဘာသာပြုနိင်ရေ တမ်းပလိတ်ရှာမတွိပါ",
-	"error.targetTranslation": "ရီးစူးဘာသာပြန် ပြဿနာ",
-	"tests.unsupported": "ဘာသာပြန်စမ်းသတ်မှုကို မထောက်ပံ့နိင်"
+	"error.targetTranslation": "ရီးစူးဘာသာပြန် ပြဿနာ"
 }

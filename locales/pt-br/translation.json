@@ -1,0 +1,20 @@
+{
+	"@metadata": {
+		"authors": [
+			"Eduardoaddad"
+		]
+	},
+	"home.config.main": "Principal",
+	"home.config.sandbox": "Testes",
+	"home.config.user": "Nome de usuário",
+	"switch.switch": "Mudar",
+	"switch.username": "Nome de usuário",
+	"edit": "editar",
+	"fieldHeader": "Campo",
+	"scoreHeader": "Pontuação",
+	"field.title": "Título",
+	"field.date": "Data de publicação",
+	"field.publishedIn": "Publicado em",
+	"field.publishedBy": "Publicado por",
+	"field.language": "Idioma"
+}

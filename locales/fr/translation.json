@@ -21,7 +21,6 @@
 	"switch.main": "Basculer à la configuration principale",
 	"switch.sandbox": "Basculer à la configuration du bac à sable",
 	"switch.username": "Nom d’utilisateur",
-	"catchall": "fourre-tout",
 	"pattern_labelled": "Sous-groupe de traduction pour le patron de chemin d’URL « {{label}} » :",
 	"pattern_unlabelled": "Sous-groupe de traduction pour le patron de chemin d’URL :",
 	"pattern_undefined": "Sous-groupe de traduction pour le patron de chemin d’URL non défini",
@@ -53,9 +52,6 @@
 	"error.invalidTarget": "URL cible non valide",
 	"error.noTargetPaths": "Chemin cible non spécifié et aucun disponible depuis les configurations modèles ou de test",
 	"error.domain": "Web2Cit a échoué à créer l’objet Domaine",
-	"error.external": "Échec de la récupération d’une des ressources externes nécessaires pour traduire l’URL cible",
-	"error.external.details": "{{- url}} (erreur {{code}} : {{message}})",
 	"error.noTranslation": "Aucun modèle de traduction applicable trouvé pour la page web cible",
-	"error.targetTranslation": "Erreur de traduction cible",
-	"tests.unsupported": "Les tests de traduction ne sont pas encore pris en charge"
+	"error.targetTranslation": "Erreur de traduction cible"
 }
