@@ -1,0 +1,36 @@
+{
+	"@metadata": {
+		"authors": [
+			"YaronSh"
+		]
+	},
+	"home.subheading": "חילוץ נתוני על אוטומטי ושיתופי",
+	"home.target": "כתובת יעד",
+	"home.extract": "חילוץ",
+	"home.config": "להשתמש בהגדרות {{choice}}",
+	"home.config.main": "ראשי",
+	"home.config.sandbox": "ארגז חול",
+	"home.config.user": "שם משתמש",
+	"home.debug": "הצגת פרטי ניפוי שגיאות",
+	"title": "תקציר תרגום",
+	"header": "תקציר תרגום לשם תחום:",
+	"config_main": "נעשה שימוש בקובצי הגדרות ראשיים תחת:",
+	"switch.switch": "החלפה",
+	"switch.main": "החלפה להגדרות הראשיות",
+	"switch.sandbox": "החלפה להגדרות ארגז חול",
+	"switch.username": "שם משתמש",
+	"edit": "עריכה",
+	"templatePath": "נתיב תבנית:",
+	"fieldHeader": "שדה",
+	"outputHeader": "פלט תרגום",
+	"testHeader": "פלט צפוי",
+	"scoreHeader": "ניקוד",
+	"nonApplicable": "לא זמין",
+	"debug": "פרטי ניפוי שגיאות",
+	"field.itemType": "סוג פריט",
+	"field.title": "כותרת",
+	"field.language": "שפה",
+	"error.noTarget": "נא לציין כתובת יעד",
+	"error.invalidTarget": "כתובת יעד שגויה",
+	"error.targetTranslation": "שגיאת יעד תרגום"
+}

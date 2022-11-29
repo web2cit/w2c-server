@@ -22,7 +22,6 @@
 	"switch.main": "Lumipat sa pangunahing konpigurasyon",
 	"switch.sandbox": "Lumipat sa konpigurasyon sa sandbox",
 	"switch.username": "Username",
-	"catchall": "catch-all",
 	"pattern_labelled": "Subgrupo ng salin para sa patttern ng URL path na \"{{label}}\":",
 	"pattern_unlabelled": "Subgrupo ng salin para sa pattern ng URL path:",
 	"pattern_undefined": "Subgrupo ng salin para sa di tinukoy na pattern ng URL path",
@@ -54,9 +53,6 @@
 	"error.invalidTarget": "Invalid na target na URL",
 	"error.noTargetPaths": "Walang binigay na path ng target, at wala ding magagamit mula sa mga konpigurasyon sa padron o pagsubok",
 	"error.domain": "Nabigo ang Web2Cit na gumawa ng Domain object",
-	"error.external": "Nabigong makuha ang isa sa mga panlabas na resource na kailangan para maisalin ang target na URL",
-	"error.external.details": "{{- url}} (Error {{code}}: {{message}})",
 	"error.noTranslation": "Walang akmang padron sa pagsalin ang nakita para sa target na webpage",
-	"error.targetTranslation": "Error sa pagsalin sa target",
-	"tests.unsupported": "Hindi pa suportado sa ngayon ang mga pagsubok sa salin"
+	"error.targetTranslation": "Error sa pagsalin sa target"
 }

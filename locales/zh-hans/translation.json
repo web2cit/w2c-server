@@ -47,7 +47,5 @@
 	"error.noTarget": "指定目标URL",
 	"error.invalidTarget": "目标URL无效",
 	"error.domain": "Web2Cit未能创建域对象",
-	"error.external.details": "{{- url}}（错误{{code}}：{{message}}）",
-	"error.targetTranslation": "目标翻译错误",
-	"tests.unsupported": "尚不支持翻译测试"
+	"error.targetTranslation": "目标翻译错误"
 }

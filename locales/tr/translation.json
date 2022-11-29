@@ -36,6 +36,5 @@
 	"field.language": "Dil",
 	"error.noTarget": "Bir hedef URL belirtin",
 	"error.invalidTarget": "Geçersiz hedef URL",
-	"error.targetTranslation": "Hedef çeviri hatası",
-	"tests.unsupported": "Çeviri testleri henüz desteklenmiyor"
+	"error.targetTranslation": "Hedef çeviri hatası"
 }

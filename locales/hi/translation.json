@@ -22,7 +22,6 @@
 	"switch.main": "मुख्य कॉन्फ़िगरेशन पर बदलें",
 	"switch.sandbox": "प्रयोगपृष्ठ कॉन्फ़िगरेशन पर बदलें",
 	"switch.username": "सदस्यनाम",
-	"catchall": "catch-all",
 	"pattern_labelled": "\"{{label}}\" URL पथ पैटर्न के लिए अनुवाद उप-समूह:",
 	"pattern_unlabelled": "URL पथ पैटर्न के लिए अनुवाद उप-समूह:",
 	"pattern_undefined": "अपरिभाषित URL पथ पैटर्न के लिए अनुवाद उप-समूह",
@@ -54,9 +53,6 @@
 	"error.invalidTarget": "अमान्य लक्षित URL",
 	"error.noTargetPaths": "लक्ष्य का पथ अनिर्दिष्ट है, और साँचे या परीक्षणों के कॉन्फ़िगरेशन्स से कोई पथ उपलब्ध नहीं",
 	"error.domain": "Web2Cit डोमेन परियोजना बनाने में असफल हुआ",
-	"error.external": "लक्षित URL का अनुवादित करने के लिए आवश्यक बाहरी संसाधनों में से एक लाने में असफल",
-	"error.external.details": "{{- url}} (त्रुटि {{code}}: {{message}})",
 	"error.noTranslation": "लक्षित वेबपृष्ठ के लिए कोई लागू अनुवाद साँचा नहीं मिला",
-	"error.targetTranslation": "लक्ष्य अनुवाद में त्रुटि",
-	"tests.unsupported": "अनुवाद परीक्षण अभी तक समर्थित नहीं हैं"
+	"error.targetTranslation": "लक्ष्य अनुवाद में त्रुटि"
 }

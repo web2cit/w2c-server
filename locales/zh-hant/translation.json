@@ -46,8 +46,7 @@
 	"field.language": "語言",
 	"error.noTarget": "指定一個目標 URL",
 	"error.invalidTarget": "目標 URL 無效",
+	"error.noTargetPaths": "未指定目標路徑，且模板或測試組態中沒有可用的路徑",
 	"error.domain": "Web2Cit 建立網域物件失敗",
-	"error.external.details": "{{- url}}（錯誤 {{code}}：{{message}}）",
-	"error.targetTranslation": "目標翻譯錯誤",
-	"tests.unsupported": "尚未支援翻譯測試"
+	"error.targetTranslation": "目標翻譯錯誤"
 }
