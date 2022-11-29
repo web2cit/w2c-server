@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+-
+
+## [1.2.0] - 2022-11-29
+
 ### Added
 
 - Add Arabic, German, Hebrew, Brazilian Portugues, Swedish and Ukrainian
@@ -120,7 +124,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First version to be deployed at https://web2cit.toolforge.org/.
 
 
-[unreleased]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0...main
+[unreleased]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.2.0...main
+[1.2.0]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0...v1.2.0
 [1.1.0]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-beta.1...v1.1.0
 [1.1.0-beta.1]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-beta.0...v1.1.0-beta.1
 [1.1.0-beta.0]: https://gitlab.wikimedia.org/diegodlh/w2c-server/-/compare/v1.1.0-alpha.3...v1.1.0-beta.0
