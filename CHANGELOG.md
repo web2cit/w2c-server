@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--
+### Added
+
+- Add Arabic, German, Hebrew, Brazilian Portugues, Swedish and Ukrainian
+  translations from Translatewiki.
+
+### Changed
+
+- Update Bengali, French, Hindi, Kashmiri (Arabic script), Macedonian, Rakhine,
+  Slovenian, Tagalog, Turkish, Simplified Chinese and Traditional Chinese
+  translations from Translatewiki.
 
 ## [1.1.0] - 2022-10-26
 
