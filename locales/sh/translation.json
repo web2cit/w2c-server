@@ -1,0 +1,20 @@
+{
+	"@metadata": {
+		"authors": [
+			"Vlad5250"
+		]
+	},
+	"web2cit": "Web2Cit",
+	"home.subheading": "Kolaborativno automatsko izdvajanje metapodataka",
+	"home.target": "Ciljna URL adresa",
+	"home.config.main": "Glavna",
+	"home.config.sandbox": "Pijesak",
+	"home.config.user": "Korisničko ime",
+	"config_main": "Korištenje glavnih konfiguracijskih datoteka u:",
+	"switch.username": "Korisničko ime",
+	"edit": "uredi",
+	"fieldHeader": "Polje",
+	"scoreHeader": "Ocjena",
+	"field.title": "Naslov",
+	"field.language": "Jezik"
+}
