@@ -1,13 +1,15 @@
 {
 	"@metadata": {
 		"authors": [
-			"Lakejason0"
+			"Lakejason0",
+			"Xyb"
 		]
 	},
-	"web2cit": "Web2Cit",
+	"home.subheading": "协作自动元数据提取",
 	"home.target": "目标URL",
+	"home.extract": "提取",
 	"home.config": "使用{{choice}}配置",
-	"home.config.main": "主",
+	"home.config.main": "主要",
 	"home.config.sandbox": "沙盒",
 	"home.config.user": "用户名",
 	"home.debug": "显示调试信息",
@@ -31,6 +33,8 @@
 	"fieldHeader": "字段",
 	"outputHeader": "翻译输出",
 	"testHeader": "预期输出",
+	"scoreHeader": "分数",
+	"nonApplicable": "暂无",
 	"debug": "调试信息",
 	"debug.enable.description": "翻译输出内容与预期不符？请{{enable}}来显示详细的翻译输出信息。",
 	"debug.enable": "启用调试",
@@ -46,6 +50,8 @@
 	"field.language": "语言",
 	"error.noTarget": "指定目标URL",
 	"error.invalidTarget": "目标URL无效",
+	"error.noTargetPaths": "目标路径未指定，并且模板或测试配置中没有可用的路径",
 	"error.domain": "Web2Cit未能创建域对象",
+	"error.noTranslation": "找不到目标网页适用的翻译模板",
 	"error.targetTranslation": "目标翻译错误"
 }

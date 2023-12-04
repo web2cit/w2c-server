@@ -1,0 +1,23 @@
+{
+	"@metadata": {
+		"authors": [
+			"Rulebased"
+		]
+	},
+	"home.target": "نشانی اینترنتی مقصد",
+	"home.config.main": "اصلی",
+	"home.config.sandbox": "صفحه تمرین",
+	"title": "خلاصه ترجمه",
+	"switch.switch": "تعویض",
+	"switch.sandbox": "تغییر به تنظیمات صفحه تمرین",
+	"switch.username": "نام کاربری",
+	"edit": "ویرایش",
+	"templatePath": "مسیر الگو:",
+	"scoreHeader": "امتیاز",
+	"nonApplicable": "غیر قابل دسترس",
+	"field.title": "عنوان",
+	"field.date": "تاریخ انتشار",
+	"field.publishedBy": "منتشرشده توسط",
+	"field.language": "زبان",
+	"error.invalidTarget": "نشانی اینترنتی مقصد، نامعتبر است."
+}

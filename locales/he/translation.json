@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Amire80",
 			"YaronSh"
 		]
 	},
@@ -15,11 +16,19 @@
 	"title": "תקציר תרגום",
 	"header": "תקציר תרגום לשם תחום:",
 	"config_main": "נעשה שימוש בקובצי הגדרות ראשיים תחת:",
+	"config_sandbox": "שימוש בקובצי התצורה של ארגז חול (משתמש:{{user}}) ב־:",
 	"switch.switch": "החלפה",
 	"switch.main": "החלפה להגדרות הראשיות",
 	"switch.sandbox": "החלפה להגדרות ארגז חול",
 	"switch.username": "שם משתמש",
+	"pattern_labelled": "תת־קבוצת תרגום עבור תבנית נתיב כתובת האתר של \"{{label}}\":",
+	"pattern_unlabelled": "תת־קבוצת תרגום לתבנית נתיב כתובת אתר:",
+	"pattern_undefined": "תת־קבוצת תרגום לתבנית נתיב כתובת URL לא מוגדרת",
 	"edit": "עריכה",
+	"target": "תוצאות תרגום ליעד:",
+	"template_labelled": "תוצאת תרגום באמצעות התבנית המתאימה #{{index}}, \"{{label}}\"",
+	"template_unlabelled": "תוצאת תרגום באמצעות התבנית המתאימה #{{index}}",
+	"template_fallback": "תוצאת תרגום עם תבנית גיבוי",
 	"templatePath": "נתיב תבנית:",
 	"fieldHeader": "שדה",
 	"outputHeader": "פלט תרגום",
@@ -27,10 +36,22 @@
 	"scoreHeader": "ניקוד",
 	"nonApplicable": "לא זמין",
 	"debug": "פרטי ניפוי שגיאות",
+	"debug.enable.description": "פלטי התרגום שונים ממה שציפית? {{enable}} כדי להציג פרטי פלט תרגום מפורטים.",
+	"debug.enable": "להפעיל את ניפוי השגיאות",
+	"debug.disable.description": "יותר מדי מידע? ניתן {{disable}} כדי להסתיר מידע פלט תרגום מפורט.",
+	"debug.disable": "להשבית את ניפוי השגיאות",
 	"field.itemType": "סוג פריט",
 	"field.title": "כותרת",
+	"field.authorLast": "שם המשפחה או המלא של המחבר",
+	"field.authorFirst": "שמות פרטיים של המחבר",
+	"field.date": "תאריך פרסום",
+	"field.publishedIn": "פורסם תחת",
+	"field.publishedBy": "פורסם על־ידי",
 	"field.language": "שפה",
 	"error.noTarget": "נא לציין כתובת יעד",
-	"error.invalidTarget": "כתובת יעד שגויה",
+	"error.invalidTarget": "כתובת יעד בלתי־תקינה",
+	"error.noTargetPaths": "נתיב היעד לא צוין ואין נתיב זמין לא מהגדרות התבנית ולא מהגדרות הבדיקה",
+	"error.domain": "Web2Cit נכשל ביצירת עצם שם־תחום (Domain)",
+	"error.noTranslation": "לא נמצאה תבנית תרגום תואמת עבור דף היעד",
 	"error.targetTranslation": "שגיאת יעד תרגום"
 }

@@ -1,0 +1,21 @@
+{
+	"@metadata": {
+		"authors": [
+			"Octav53ian"
+		]
+	},
+	"home.subheading": "Extracție metadata colaborativă automatizată",
+	"home.target": "URL țintă",
+	"home.extract": "Extract",
+	"home.config.main": "Principal",
+	"home.config.sandbox": "Cutie de nisip",
+	"home.config.user": "Utilizator",
+	"title": "Sumarul traducerii",
+	"header": "Sumarul traducerii pentru domeniu",
+	"switch.switch": "Schimbă",
+	"switch.main": "Schimbă la configurația principală",
+	"switch.sandbox": "Schimbă la configurația sandbox",
+	"switch.username": "Utilizator",
+	"edit": "Edit",
+	"target": "Rezultatele traducerii pentru obiectiv"
+}

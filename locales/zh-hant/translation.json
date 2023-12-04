@@ -1,11 +1,14 @@
 {
 	"@metadata": {
 		"authors": [
-			"Kly"
+			"Kly",
+			"Wehwei",
+			"捍粵者"
 		]
 	},
-	"web2cit": "Web2Cit",
+	"home.subheading": "協同自動元數據提取",
 	"home.target": "目標 URI",
+	"home.extract": "提取",
 	"home.config": "使用{{choice}}組態",
 	"home.config.main": "主要",
 	"home.config.sandbox": "沙盒",
@@ -31,6 +34,8 @@
 	"fieldHeader": "欄位",
 	"outputHeader": "翻譯輸出",
 	"testHeader": "預期輸出",
+	"scoreHeader": "分數",
+	"nonApplicable": "不適用",
 	"debug": "除錯資訊",
 	"debug.enable.description": "翻譯輸出內容與您所期望的結果不同？請{{enable}}來顯示詳細的翻譯輸出資訊。",
 	"debug.enable": "啟用除錯",
@@ -42,11 +47,12 @@
 	"field.authorFirst": "作者的名字",
 	"field.date": "發布日期",
 	"field.publishedIn": "發布在",
-	"field.publishedBy": "發布由",
+	"field.publishedBy": "發佈者",
 	"field.language": "語言",
 	"error.noTarget": "指定一個目標 URL",
 	"error.invalidTarget": "目標 URL 無效",
 	"error.noTargetPaths": "未指定目標路徑，且模板或測試組態中沒有可用的路徑",
 	"error.domain": "Web2Cit 建立網域物件失敗",
+	"error.noTranslation": "找不到適用於目標網頁的翻譯模板",
 	"error.targetTranslation": "目標翻譯錯誤"
 }

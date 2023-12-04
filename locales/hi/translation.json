@@ -2,10 +2,10 @@
 	"@metadata": {
 		"authors": [
 			"Abijeet Patro",
-			"Saurmandal"
+			"Saurmandal",
+			"~aanzx"
 		]
 	},
-	"web2cit": "Web2Cit",
 	"home.subheading": "सहयोगी स्वचालित मेटाडेटा एक्सट्रैक्शन",
 	"home.target": "लक्षित URL",
 	"home.extract": "एक्सट्रैक्ट करें",

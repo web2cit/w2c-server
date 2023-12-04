@@ -1,0 +1,30 @@
+{
+	"@metadata": {
+		"authors": [
+			"Veracious"
+		]
+	},
+	"home.target": "URL sasaran",
+	"home.extract": "Ekstrak",
+	"home.config.sandbox": "Bak pasir",
+	"home.config.user": "Nama pengguna",
+	"title": "Ringkasan terjemahan",
+	"header": "Ringkasan terjemahan untuk domain:",
+	"config_main": "Menggunakan berkas konfigurasi utama di:",
+	"edit": "sunting",
+	"target": "Hasil terjemahan untuk sasaran:",
+	"scoreHeader": "Skor",
+	"nonApplicable": "t/a",
+	"debug": "Informasi pengawakutuan",
+	"debug.enable": "Nyalakan pengawakutuan",
+	"debug.disable": "Matikan pengawakutuan",
+	"field.itemType": "Jenis butir",
+	"field.title": "Judul",
+	"field.date": "Tanggal penerbitan",
+	"field.publishedIn": "Diterbitkan di",
+	"field.publishedBy": "Diterbitkan oleh",
+	"field.language": "Bahasa",
+	"error.noTarget": "Tentukan URL sasaran",
+	"error.invalidTarget": "URL sasaran tidak valid",
+	"error.targetTranslation": "Kesalahan penerjemahan sasaran"
+}

@@ -1,11 +1,12 @@
 {
 	"@metadata": {
 		"authors": [
+			"Amire80",
 			"Diegodlh",
 			"Robby"
 		]
 	},
-	"web2cit": "Web2Cit label, shown as page title and heading on Web2Cit server's home page.",
+	"web2cit": "{{optional}}\nWeb2Cit label, shown as page title and heading on Web2Cit server's home page.",
 	"home.subheading": "Web2Cit \"catchword\" to be shown as subheading on Web2Cit server's home page.",
 	"home.target": "Placeholder text shown inside the text input field where the target URL should be entered on the server's home page.",
 	"home.extract": "Label shown on the main button of the server's homepage, to get translation results for the target URL provided.",
@@ -39,8 +40,8 @@
 	"debug": "Heading preceding the debugging information for a given target, if it was been requested.",
 	"debug.enable.description": "Text shown at the footer of the translation summary page with a link to refresh the page including debugging information.\n\nThe \"enable\" parameter is replaced with the corresponding link.",
 	"debug.enable": "Label on the link to refresh the translation summary page to include debugging information.",
-	"debug.disable.description": "Text shown at the footer of the translation summary page with a link to refresh the page excluding debugging information.\n\nThe \"disable\" parameter is replaced with the corresponding link.",
-	"debug.disable": "Label on the link to refresh the translation summary page to exclude debugging information.",
+	"debug.disable.description": "Text shown at the footer of the translation summary page with a link to refresh the page excluding debugging information.\n\nThe \"disable\" parameter is replaced with the corresponding link: {{msg-wm|Web2cit-translation-debug.disable}}",
+	"debug.disable": "Label on the link to refresh the translation summary page to exclude debugging information. Used in {{msg-wm|Web2cit-translation-debug.disable.description}}.",
 	"field.itemType": "Label for the itemType translation field.",
 	"field.title": "{{identical|Title}}",
 	"field.authorLast": "Label for the authorLast translation field.",

@@ -1,0 +1,23 @@
+{
+	"@metadata": {
+		"authors": [
+			"Stacy Lavuha"
+		]
+	},
+	"home.subheading": "Uchomoaji wa metadata otomatiki iliyo shirikishi",
+	"home.target": "URL inayolengwa",
+	"home.extract": "Chomoa",
+	"home.config": "Tumia usanidi wa {{choice}}",
+	"home.config.main": "Kuu",
+	"home.config.sandbox": "Sandbox",
+	"home.config.user": "Jina la mtumiaji",
+	"home.debug": "Onyesha maelezo ya kusuluhisha",
+	"title": "Muhtasari wa tafsiri",
+	"header": "Muhtasari wa tafsiri ya kikoa",
+	"config_main": "Kutumia faili kuu za usanidi katika:",
+	"config_sandbox": "Kutumia Sandbox (Mtumiaji:{{user}}) faili za usanidi katika:",
+	"switch.switch": "Badili",
+	"switch.main": "Badili hadi Usanidi mkuu",
+	"switch.sandbox": "Badili hadi usanidi wa sandbox",
+	"switch.username": "Jina la mtumiaji"
+}
